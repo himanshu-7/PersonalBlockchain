@@ -2,6 +2,7 @@ package nl.tudelft.cs4160.trustchain_android.block;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Base64;
+import android.util.Log;
 
 import com.google.protobuf.ByteString;
 
@@ -236,9 +237,12 @@ public class TrustChainBlock {
 
         // If a block is linked with a block of the same owner it does not serve any purpose and is invalid.
         if(block.getPublicKey().equals(block.getLinkPublicKey())) {
-            result.setInvalid();
-            errors.add("Self linked block");
+          //Simulation
+           // result.setInvalid();
+           // errors.add("Self linked block");
         }
+
+
         // If it is implied that block is a genesis block, check if it correctly set up
         if(isGenesisBlock(block)){
             if(block.getSequenceNumber() == GENESIS_SEQ && !block.getPreviousHash().equals(GENESIS_HASH)) {

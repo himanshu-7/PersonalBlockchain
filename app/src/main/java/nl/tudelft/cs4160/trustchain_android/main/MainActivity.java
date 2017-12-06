@@ -78,10 +78,29 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     View.OnClickListener connectionButtonListener = new View.OnClickListener(){
         @Override
         public void onClick(View view) {
-            Peer peer = new Peer(null, editTextDestinationIP.getText().toString(),
-                    Integer.parseInt(editTextDestinationPort.getText().toString()));
+
+
+           // Peer peer = new Peer(null, editTextDestinationIP.getText().toString() ,Integer.parseInt(editTextDestinationPort.getText().toString()));
             //send either a crawl request or a half block
+            //communication.connectToPeer(peer);
+
+
+            Log.i(TAG, "Welcome mamma");
+
+
+            Peer peer = new Peer(null, "192.168.0.1" ,1234);
+
+            //I'm putting in my Map the remote device which have those info
+            communication.simAddPublicKey("192.168.0.1",communication.getMyPublicKey());
+
+
             communication.connectToPeer(peer);
+
+
+
+
+
+
         }
     };
 
