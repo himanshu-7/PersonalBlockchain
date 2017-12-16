@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     Button resetDatabaseButton;
     Button bluetoothButton;
     EditText editTextDestinationIP;
+    EditText toValidateText;
+    static EditText validatorText;
     EditText editTextDestinationPort;
 
     MainActivity thisActivity;
@@ -67,25 +69,26 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
      * public key.
      * Also, when we want to send a block always send our last 5 blocks to the peer so the block
      * request won't be rejected due to NO_INFO error.
-     *
+     * <p>
      * This is code to simulate dispersy, note that this does not work properly with a busy network,
      * because the time delay between sending information to the peer and sending the actual
      * to-be-signed block could cause gaps.
-     *
+     * <p>
      * Also note that whatever goes wrong we will never get a valid full block, so the integrity of
      * the network is not compromised due to not using dispersy.
      */
-    View.OnClickListener connectionButtonListener = new View.OnClickListener(){
+    View.OnClickListener connectionButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-
-
-           // Peer peer = new Peer(null, editTextDestinationIP.getText().toString() ,Integer.parseInt(editTextDestinationPort.getText().toString()));
+            Peer peer = new Peer(null, editTextDestinationIP.getText().toString(), Integer.parseInt(editTextDestinationPort.getText().toString()));
+            //Simulation : by addding me to the list i don't have to send a claw request first in case i'm sending message to myself
+            communication.simAddPublicKey(getLocalIPAddress(), communication.getMyPublicKey());
             //send either a crawl request or a half block
             //communication.connectToPeer(peer);
+            communication.createNewBlock(peer, toValidateText.getText().toString());
 
-
-            Log.i(TAG, "Welcome mamma");
+            /*
+            Log.i(TAG, "ciao mamma");
 
 
             Peer peer = new Peer(null, "192.168.0.1" ,1234);
@@ -97,14 +100,13 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
             communication.connectToPeer(peer);
 
 
-
-
+            */
 
 
         }
     };
 
-    View.OnClickListener chainExplorerButtonListener = new View.OnClickListener(){
+    View.OnClickListener chainExplorerButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             Intent intent = new Intent(thisActivity, ChainExplorerActivity.class);
@@ -148,6 +150,8 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         statusText = findViewById(R.id.status);
         statusText.setMovementMethod(new ScrollingMovementMethod());
         editTextDestinationIP = findViewById(R.id.destination_IP);
+        toValidateText = findViewById(R.id.toValidateText);
+        validatorText = findViewById(R.id.validatorText);
         editTextDestinationPort = findViewById(R.id.destination_port);
         connectionButton = findViewById(R.id.connection_button);
         chainExplorerButton = findViewById(R.id.chain_explorer_button);
@@ -162,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         //create or load keys
         initKeys();
 
-        if(isStartedFirstTime()) {
+        if (isStartedFirstTime()) {
             MessageProto.TrustChainBlock block = TrustChainBlock.createGenesisBlock(kp);
             dbHelper.insertInDB(block);
         }
@@ -184,20 +188,21 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
 
     private void initKeys() {
         kp = Key.loadKeys(getApplicationContext());
-        if(kp == null) {
+        if (kp == null) {
             kp = Key.createAndSaveKeys(getApplicationContext());
-            Log.i(TAG, "New keys created" );
+            Log.i(TAG, "New keys created");
         }
     }
 
     /**
      * Checks if this is the first time the app is started and returns a boolean value indicating
      * this state.
+     *
      * @return state - false if the app has been initialized before, true if first time app started
      */
     public boolean isStartedFirstTime() {
         // check if a genesis block is present in database
-        MessageProto.TrustChainBlock genesisBlock = dbHelper.getBlock(kp.getPublic().getEncoded(),GENESIS_SEQ);
+        MessageProto.TrustChainBlock genesisBlock = dbHelper.getBlock(kp.getPublic().getEncoded(), GENESIS_SEQ);
 
         return genesisBlock == null;
     }
@@ -246,6 +251,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     /**
      * Finds the local IP address of this device, loops trough network interfaces in order to find it.
      * The address that is not a loopback address is the IP of the device.
+     *
      * @return a string representation of the device's IP address
      */
     public String getLocalIPAddress() {
@@ -254,12 +260,12 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
             for (NetworkInterface netInt : netInterfaces) {
                 List<InetAddress> addresses = Collections.list(netInt.getInetAddresses());
                 for (InetAddress addr : addresses) {
-                    if(addr.isSiteLocalAddress()) {
+                    if (addr.isSiteLocalAddress()) {
                         return addr.getHostAddress();
                     }
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -271,11 +277,16 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         //just to be sure run it on the ui thread
         //this is not necessary when this function is called from a AsyncTask
         runOnUiThread(new Runnable() {
-                  @Override
-                  public void run() {
-                      TextView statusText = findViewById(R.id.status);
-                      statusText.append(msg);
-                  }
-              });
+            @Override
+            public void run() {
+                TextView statusText = findViewById(R.id.status);
+                statusText.append(msg);
+            }
+        });
+    }
+
+    public static String getValidatorText (){
+
+        return validatorText.getText().toString();
     }
 }

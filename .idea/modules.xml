@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CS4160-trustchain-android.iml" filepath="$PROJECT_DIR$/CS4160-trustchain-android.iml" />
+      <module fileurl="file://C:\Users\Thinkpad\Documents\Android Studio\PersonalBlockchain\CS4160-trustchain-android.iml" filepath="C:\Users\Thinkpad\Documents\Android Studio\PersonalBlockchain\CS4160-trustchain-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PersonalBlockchain.iml" filepath="$PROJECT_DIR$/PersonalBlockchain.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\Thinkpad\Documents\Android Studio\PersonalBlockchain\app\app.iml" filepath="C:\Users\Thinkpad\Documents\Android Studio\PersonalBlockchain\app\app.iml" />
     </modules>
   </component>
 </project>
