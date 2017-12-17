@@ -25,7 +25,6 @@ import static nl.tudelft.cs4160.trustchain_android.Peer.bytesToHex;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.GENESIS_SEQ;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.*;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.sign;
-import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.validate;
 import static nl.tudelft.cs4160.trustchain_android.block.ValidationResult.NO_INFO;
 import static nl.tudelft.cs4160.trustchain_android.block.ValidationResult.PARTIAL;
 import static nl.tudelft.cs4160.trustchain_android.block.ValidationResult.PARTIAL_NEXT;
@@ -167,10 +166,6 @@ public abstract class Communication {
 
         //remove : here the sign should be stored in an another fields double sign
         block = sign(block, keyPair.getPrivate());
-       // block = sign(block, keyPair.getPrivate());
-        //block = sign(block, keyPair.getPrivate());
-        //block = sign(block, keyPair.getPrivate());
-
 
 
         Log.e(TAG, "The pk is:  "+  keyPair.getPrivate());
@@ -178,7 +173,7 @@ public abstract class Communication {
 
         ValidationResult validation;
         try {
-            validation = validate(block, dbHelper);
+            validation = validateFullBlock(block, dbHelper);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -198,6 +193,7 @@ public abstract class Communication {
             return block;
         }
     }
+
 
     /**
      * Builds a half block with the transaction.
@@ -229,7 +225,7 @@ public abstract class Communication {
 
         ValidationResult validation;
         try {
-            validation = validate(block, dbHelper);
+            validation = validateHalfBlock(block, dbHelper);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -408,7 +404,7 @@ public abstract class Communication {
 
         ValidationResult validation;
         try {
-            validation = validate(block, dbHelper);
+            validation = validateHalfBlock(block, dbHelper);
         } catch (Exception e) {
             e.printStackTrace();
             return;
