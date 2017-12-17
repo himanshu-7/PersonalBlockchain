@@ -161,6 +161,9 @@ public class TrustChainBlock {
     public static MessageProto.TrustChainBlock sign(MessageProto.TrustChainBlock block, PrivateKey privateKey) {
         //sign the hash
         byte[] hash = TrustChainBlock.hash(block);
+        Log.e(TAG, "Hash value of creation sign:  "+ bytesToHex(hash));
+
+
         byte[] signature = Key.sign(privateKey, hash);
 
         //create the block
@@ -179,6 +182,9 @@ public class TrustChainBlock {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         ValidationResult result = new ValidationResult();
         List<String> errors = new ArrayList<>();
+
+
+       /*
 
         // ** Step 1: Get all the related blocks from the database **
         // The validity of blocks is immutable. Once they are accepted they cannot change validation
@@ -261,6 +267,18 @@ public class TrustChainBlock {
             errors.add("Link sequence number not empty and is prior to genesis");
         }
 
+
+
+        */
+
+
+
+
+
+
+
+
+
         //TODO: resolve stupid conversions byte[] => Base64 => byte[]
         String key = Base64.encodeToString(block.getPublicKey().toByteArray(), Base64.DEFAULT);
         PublicKey publicKey = Key.loadPublicKey(key);
@@ -270,12 +288,25 @@ public class TrustChainBlock {
         } else {
             // If public key is valid, check validity of signature
             byte[] hash = hash(block);
+            Log.e(TAG, "Hash value of validation procedure:  "+ bytesToHex(hash));
+
             byte[] signature = block.getSignature().toByteArray();
+            Log.i(TAG, " "  );
             if (!Key.verify(publicKey, hash, signature)) {
                 result.setInvalid();
                 errors.add("Invalid signature.");
+            }else{
+                result.setPartialNext();
+
             }
         }
+
+
+
+
+        /*
+
+
 
         // If a block is linked with a block of the same owner it does not serve any purpose and is invalid.
         if (block.getPublicKey().equals(block.getLinkPublicKey())) {
@@ -391,6 +422,8 @@ public class TrustChainBlock {
                 // Again, this might not be fraud, but fixing it can only result in fraud.
             }
         }
+
+        */
 
         return result.setErrors(errors);
     }

@@ -114,13 +114,24 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         }
     };
 
+
     View.OnClickListener keyOptionsListener = new View.OnClickListener() {
+
+
         @Override
         public void onClick(View view) {
-            Intent intent = new Intent(thisActivity, BluetoothActivity.class);
-            startActivity(intent);
+
+            //Simulation
+            //Intent intent = new Intent(thisActivity, BluetoothActivity.class);
+            //startActivity(intent);
+
+
+            kp = nl.tudelft.cs4160.trustchain_android.Util.Key.createAndSaveKeys(getApplicationContext());
+
         }
     };
+
+
 
     View.OnClickListener resetDatabaseListener = new View.OnClickListener() {
         @Override
