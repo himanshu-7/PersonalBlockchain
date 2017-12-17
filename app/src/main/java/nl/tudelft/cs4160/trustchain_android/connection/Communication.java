@@ -167,6 +167,14 @@ public abstract class Communication {
 
         //remove : here the sign should be stored in an another fields double sign
         block = sign(block, keyPair.getPrivate());
+       // block = sign(block, keyPair.getPrivate());
+        //block = sign(block, keyPair.getPrivate());
+        //block = sign(block, keyPair.getPrivate());
+
+
+
+        Log.e(TAG, "The pk is:  "+  keyPair.getPrivate());
+        Log.e(TAG, "The full block sign is: "+ bytesToHex(block.getSignature().toByteArray()));
 
         ValidationResult validation;
         try {
@@ -212,6 +220,12 @@ public abstract class Communication {
                         peer.getPublicKey()
                 );
         block = sign(block, keyPair.getPrivate());
+
+        Log.e(TAG, "The half block sign is: "+ bytesToHex(block.getSignature().toByteArray()));
+
+        block = sign(block, keyPair.getPrivate());
+        Log.e(TAG, "The half block sign 2 is: "+ bytesToHex(block.getSignature().toByteArray()));
+
 
         ValidationResult validation;
         try {
