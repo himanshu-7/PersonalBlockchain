@@ -325,25 +325,21 @@ public abstract class Communication {
 
             peer.setPublicKey(block.getPublicKey().toByteArray());
             peer.setPort(NetworkCommunication.DEFAULT_PORT);
-            addNewPublicKey(peer);
+
 
             if(block.getSequenceNumber() ==1){
-                listener.updateLog("\n I got an ack block and it's a genesis block.");
-                Log.e(TAG, "I got an ack block and it's a genesis block.");
+                listener.updateLog("\n I got an ack block and it's a genesis block with pk: "+ pubKeyToString(block.getPublicKey().toByteArray(), 32) + "\n");
+                Log.e(TAG, "I got an ack block and it's a genesis block with pk: "+ pubKeyToString(block.getPublicKey().toByteArray(), 32) + "\n");
+                addNewPublicKey(peer);
                 return;
             }
 
             if (block.getLinkSequenceNumber() == TrustChainBlock.UNKNOWN_SEQ) {
                 // In case we received a half block
-                messageLog += "half block received from: " + peer.getIpAddress() + ":"
-                        + peer.getPort() + "\n"
-                        + TrustChainBlock.toShortString(block);
-
+                messageLog += "half block received from: " + peer.getIpAddress() + ":" + peer.getPort() + "\n"+ TrustChainBlock.toShortString(block);
                 listener.updateLog("\n  half block recived: " + messageLog);
-
-                //make sure the correct port is set
+                addNewPublicKey(peer);
                 this.synchronizedReceivedHalfBlock(peer, block);
-
             } else {
 
                 //In case we received a full block
@@ -352,7 +348,6 @@ public abstract class Communication {
                 Log.e(TAG, "I got a full block from: " + peer.getIpAddress());
 
                 if (blockInVerification != null) {
-
                     //Check if we have this block out for verification (the comparison should be on the signature1 )
                     if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey())) {
                         //checking of the sign2
@@ -362,8 +357,9 @@ public abstract class Communication {
                         return;
                     }
                 } else {
-                    listener.updateLog("\n It'a a ack block");
-                    Log.e(TAG, " It'a a ack block ");
+                    listener.updateLog("\n It'a a ack block with pk: "+ pubKeyToString(block.getPublicKey().toByteArray(), 32) + "\n");
+                    Log.e(TAG, " It'a a ack block  with pk: "+ pubKeyToString(block.getPublicKey().toByteArray(), 32) + "\n");
+                    addNewPublicKey(peer);
                 }
             }
 
@@ -525,6 +521,9 @@ public abstract class Communication {
         if (hasPublicKey(identifier)) {
 
             listener.updateLog("Creation of the half block with the transaction: \"" + transactionMessage + "\"");
+            Log.e(TAG, "\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
+            listener.updateLog("\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
+
             peer.setPublicKey(getPublicKey(identifier));
             //Log.e(TAG, "public key remote: " + getPublicKey(identifier));
 

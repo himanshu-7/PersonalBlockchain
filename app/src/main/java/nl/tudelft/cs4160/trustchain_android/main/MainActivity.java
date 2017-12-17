@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
             //startActivity(intent);
 
 
-            kp = nl.tudelft.cs4160.trustchain_android.Util.Key.createAndSaveKeys(getApplicationContext());
+           // kp = nl.tudelft.cs4160.trustchain_android.Util.Key.createAndSaveKeys(getApplicationContext());
 
         }
     };
