@@ -164,6 +164,7 @@ public class TrustChainBlock {
         Log.e(TAG, "Hash value of creation sign:  "+ bytesToHex(hash));
 
 
+
         byte[] signature = Key.sign(privateKey, hash);
 
         //create the block
@@ -178,7 +179,45 @@ public class TrustChainBlock {
      * @param dbHelper - dbHelper which contains the db to check against
      * @return a validation result, containing the actual validation result and a list of errors
      */
-    public static ValidationResult validate(MessageProto.TrustChainBlock block, TrustChainDBHelper dbHelper) throws Exception {
+
+
+    public static ValidationResult validateFullBlock(MessageProto.TrustChainBlock block, TrustChainDBHelper dbHelper) throws Exception {
+        ValidationResult result = new ValidationResult();
+        List<String> errors = new ArrayList<>();
+
+
+        //TODO: resolve stupid conversions byte[] => Base64 => byte[]
+        String key = Base64.encodeToString(block.getLinkPublicKey().toByteArray(), Base64.DEFAULT);
+        PublicKey publicKey = Key.loadPublicKey(key);
+        if (publicKey == null) {
+            result.setInvalid();
+            errors.add("Public key is not valid");
+        } else {
+            // If public key is valid, check validity of signature
+            byte[] hash = hash(block);
+            Log.e(TAG, "Hash value of validation procedure:  "+ bytesToHex(hash));
+
+            byte[] signature = block.getSignature().toByteArray();
+            Log.i(TAG, " "  );
+            if (!Key.verify(publicKey, hash, signature)) {
+                result.setInvalid();
+                errors.add("Invalid signature.");
+            }else{
+                result.setPartialNext();
+
+            }
+        }
+
+
+
+        return result.setErrors(errors);
+
+
+    }
+
+
+
+        public static ValidationResult validateHalfBlock(MessageProto.TrustChainBlock block, TrustChainDBHelper dbHelper) throws Exception {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         ValidationResult result = new ValidationResult();
         List<String> errors = new ArrayList<>();
