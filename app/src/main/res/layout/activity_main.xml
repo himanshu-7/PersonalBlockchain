@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/connect_ip_hint"
-            android:text="192.168.200.2" />
+            android:text="192.168.43.1" />
 
         <EditText
             android:id="@+id/destination_port"

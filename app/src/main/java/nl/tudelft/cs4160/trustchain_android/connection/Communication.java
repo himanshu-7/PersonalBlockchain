@@ -306,22 +306,32 @@ public abstract class Communication {
         MessageProto.TrustChainBlock block = message.getHalfBlock();
         MessageProto.CrawlRequest crawlRequest = message.getCrawlRequest();
 
+
+
         String messageLog = "";
 
 
         if (block.getPublicKey().size() > 0 && crawlRequest.getPublicKey().size() == 0) {
 
+            peer.setPublicKey(block.getPublicKey().toByteArray());
+            peer.setPort(NetworkCommunication.DEFAULT_PORT);
+            addNewPublicKey(peer);
+
+            if(block.getSequenceNumber() ==1){
+                listener.updateLog("\n I got an ack block and it's a genesis block.");
+                Log.e(TAG, "I got an ack block and it's a genesis block.");
+                return;
+            }
+
             if (block.getLinkSequenceNumber() == TrustChainBlock.UNKNOWN_SEQ) {
                 // In case we received a half block
-                messageLog += "block received from: " + peer.getIpAddress() + ":"
+                messageLog += "half block received from: " + peer.getIpAddress() + ":"
                         + peer.getPort() + "\n"
                         + TrustChainBlock.toShortString(block);
 
-                listener.updateLog("\n  Server: " + messageLog);
-                peer.setPublicKey(block.getPublicKey().toByteArray());
+                listener.updateLog("\n  half block recived: " + messageLog);
 
                 //make sure the correct port is set
-                peer.setPort(NetworkCommunication.DEFAULT_PORT);
                 this.synchronizedReceivedHalfBlock(peer, block);
 
             } else {
@@ -329,14 +339,21 @@ public abstract class Communication {
                 //In case we received a full block
                 listener.updateLog("\n  I got a full block bro");
                 listener.updateLog("\n" + TrustChainBlock.toShortString(block));
+                Log.e(TAG, "I got a full block from: " + peer.getIpAddress());
 
-                //Check if we have this block out for verification (the comparison should be on the signature1 )
-                if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey())) {
-                    //checking of the sign2
-                    listener.updateLog("\n Full block verified and saved");
-                    blockInVerification = null;
-                    dbHelper.insertInDB(block);
-                    return;
+                if (blockInVerification != null) {
+
+                    //Check if we have this block out for verification (the comparison should be on the signature1 )
+                    if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey())) {
+                        //checking of the sign2
+                        listener.updateLog("\n Full block verified and saved");
+                        blockInVerification = null;
+                        dbHelper.insertInDB(block);
+                        return;
+                    }
+                } else {
+                    listener.updateLog("\n It'a a ack block");
+                    Log.e(TAG, " It'a a ack block ");
                 }
             }
 
@@ -366,11 +383,11 @@ public abstract class Communication {
 
         String validatorText = MainActivity.getValidatorText();
 
-        addNewPublicKey(peer);
+        //addNewPublicKey(peer);
 
-        if(validatorText.compareTo(block.getTransaction().toStringUtf8())!=0){
-            Log.e(TAG, "\n Error: The message has is different: "+block.getTransaction().toStringUtf8()+" != "+validatorText);
-            listener.updateLog("\n Error: The message has is different: "+block.getTransaction().toStringUtf8()+" != "+validatorText);
+        if (validatorText.compareTo(block.getTransaction().toStringUtf8()) != 0) {
+            Log.e(TAG, "\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
+            listener.updateLog("\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
             return;
         }
 
