@@ -44,7 +44,7 @@ public abstract class Communication {
     private KeyPair keyPair;
     private CommunicationListener listener;
 
-    MessageProto.TrustChainBlock blockInVerification;
+    private static MessageProto.TrustChainBlock blockInVerification;
 
 
     public Communication(TrustChainDBHelper dbHelper, KeyPair kp, CommunicationListener listener) {
@@ -217,6 +217,7 @@ public abstract class Communication {
                 );
         block = sign(block, keyPair.getPrivate());
 
+        Log.e(TAG,"Peer public key after creating block: " + Arrays.toString(block.getLinkPublicKey().toByteArray()));
         Log.e(TAG, "The half block sign is: "+ bytesToHex(block.getSignature().toByteArray()));
 
         block = sign(block, keyPair.getPrivate());
@@ -534,7 +535,7 @@ public abstract class Communication {
                 MessageProto.TrustChainBlock halfBlock = createHalfBlock(transactionMessage.getBytes("UTF-8"), peer);
                 if (halfBlock != null) {
                     blockInVerification = halfBlock;
-
+                    Log.e(TAG,"Sending half block in blockInVerification");
                     listener.updateLog("\n  Sending half block ");
                     sendBlock(peer, halfBlock);
                 }

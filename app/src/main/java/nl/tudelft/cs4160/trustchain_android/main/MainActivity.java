@@ -6,12 +6,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -300,4 +304,67 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
 
         return validatorText.getText().toString();
     }
+
+    // When the QR scan code button is pressed
+    public void onClickScanButton(View view) {
+        IntentIntegrator intIntegrator = new IntentIntegrator(thisActivity);
+        intIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+        intIntegrator.setPrompt("Scan Code");
+        intIntegrator.setCameraId(0);
+        intIntegrator.setBeepEnabled(false);
+        intIntegrator.setBarcodeImageEnabled(false);
+        intIntegrator.initiateScan();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        IntentResult res = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
+        if(res != null)
+        {
+            if(res.getContents() == null)
+            {
+                Toast.makeText(this,"Cancelled the scan",Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+                // Got text, extract data and connect to the peer now
+                String qrContents;
+                qrContents = res.getContents();
+                connectToPeer(qrContents);
+            }
+        }
+        else
+        {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+
+    }
+
+    // Parse the raw QR string and ...
+    void connectToPeer(String rawQrRead)
+    {
+        // The parameters will be public_key, ip_address, port seperated by ",".
+        String[] qrArray = rawQrRead.split(",");
+
+        // If no IP address present, don't attempt connection (assuming other fields will be present)
+        if(qrArray[1].equals("null"))
+        {
+            Toast.makeText(this,"No IP adress present to connect",Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Log.e(TAG,"Peer public key to connect" + qrArray[0]);
+        Log.e(TAG,"New test after encode" + Key.loadPublicKey(qrArray[0]).getEncoded());
+
+        Peer peer = new Peer(Base64.decode(qrArray[0],Base64.DEFAULT),qrArray[1],Integer.parseInt(qrArray[2]));
+
+        communication.addNewPublicKey(peer);
+        Log.e(TAG,"After creating the peer" + Peer.bytesToHex(peer.getPublicKey()));
+
+        communication.createNewBlock(peer, toValidateText.getText().toString());
+
+    }
 }
+
+
