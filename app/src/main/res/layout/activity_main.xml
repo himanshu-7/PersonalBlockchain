@@ -7,64 +7,123 @@
     tools:context="nl.tudelft.cs4160.trustchain_android.main.MainActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="377dp"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="3dp"
+        tools:layout_editor_absoluteY="4dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/my_external_ip" />
-
-        <TextView
-            android:id="@+id/my_external_ip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/my_local_ip" />
-
-        <TextView
-            android:id="@+id/my_local_ip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:text="@string/connect_to" />
-
-        <EditText
-            android:id="@+id/destination_IP"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/connect_ip_hint"
-            android:text="192.168.43.194" />
+            android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/destination_port"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/default_port" />
+            <TextView
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="@string/my_external_ip" />
 
-        <EditText
-            android:id="@+id/toValidateText"
-            android:layout_width="366dp"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="Name" />
+            <TextView
+                android:id="@+id/my_external_ip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
-        <EditText
-            android:id="@+id/validatorText"
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="Name" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="@string/my_local_ip" />
+
+            <TextView
+                android:id="@+id/my_local_ip"
+                android:layout_width="1dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remote IP Address and Port Number:" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/destination_IP"
+                android:layout_width="102dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/connect_ip_hint"
+                android:text="192.168.43.194" />
+
+            <EditText
+                android:id="@+id/destination_port"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/default_port" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Information To Save In The Blockchain:" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="User:" />
+
+            <EditText
+                android:id="@+id/toValidateText"
+                android:layout_width="366dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="Text to validate" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Auth.:" />
+
+            <EditText
+                android:id="@+id/validatorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="Original Text" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -75,12 +134,20 @@
                 android:id="@+id/connection_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Block Creation Test" />
+                android:text="Create Block" />
+
             <Button
                 android:id="@+id/chain_explorer_button"
-                android:layout_width="wrap_content"
+                android:layout_width="119dp"
                 android:layout_height="wrap_content"
-                android:text="@string/chain_explorer"/>
+                android:text="EXplorer" />
+
+            <Button
+                android:id="@+id/reset_database_button"
+                android:layout_width="116dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="RESET" />
         </LinearLayout>
 
         <LinearLayout
@@ -95,10 +162,12 @@
                 android:text="Load QR Code" />
 
             <Button
-                android:id="@+id/reset_database_button"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/reset_database_button"/>
+                android:layout_weight="1"
+                android:onClick="onClickScanButton"
+                android:text="SCAN QR CODE" />
+
         </LinearLayout>
 
         <android.widget.ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -110,10 +179,12 @@
             <TextView
                 android:id="@+id/status"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
+
+
         </android.widget.ScrollView>
 
-</LinearLayout>
+    </LinearLayout>
 
 
 </android.support.constraint.ConstraintLayout>
