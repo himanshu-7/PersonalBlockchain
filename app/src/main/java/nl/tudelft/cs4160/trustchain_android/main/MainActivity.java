@@ -2,6 +2,7 @@ package nl.tudelft.cs4160.trustchain_android.main;
 
 import android.app.ActivityManager;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,12 +15,23 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.nio.charset.Charset;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +47,9 @@ import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBHelper;
 import nl.tudelft.cs4160.trustchain_android.main.bluetooth.BluetoothActivity;
 import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
+import static nl.tudelft.cs4160.trustchain_android.Peer.bytesToHex;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.GENESIS_SEQ;
+import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.pubKeyToString;
 
 public class MainActivity extends AppCompatActivity implements CommunicationListener {
 
@@ -120,21 +134,72 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
 
 
     View.OnClickListener keyOptionsListener = new View.OnClickListener() {
-
-
         @Override
         public void onClick(View view) {
+            String localIp = getLocalIPAddress();
 
-            //Simulation
-            //Intent intent = new Intent(thisActivity, BluetoothActivity.class);
-            //startActivity(intent);
+            if (localIp != null || externalIPText.getText() != "") {
+
+                String publicKeyToSend = Base64.encodeToString(kp.getPublic().getEncoded(), Base64.DEFAULT);
+
+                String ipToSend = "";
+                String portToSend = NetworkCommunication.DEFAULT_PORT + "";
+                if (localIp == null) {
+                    ipToSend = externalIPText.getText() + "";
+                } else {
+                    ipToSend = localIp;
+                }
+                String message = publicKeyToSend + "," + ipToSend + "," + portToSend;
 
 
-           // kp = nl.tudelft.cs4160.trustchain_android.Util.Key.createAndSaveKeys(getApplicationContext());
+                Intent intent = new Intent(thisActivity, QRCodePrint.class);
+                intent.putExtra("MESSAGE", message);
+                startActivity(intent);
+            } else {
+                Log.e(TAG, "I can't detect your ip address");
+            }
+
+            //Log.e(TAG, "This is my public key: " + kp.getPublic().toString());
+
+            /*
+            //Correct
+            Peer peerTest = new Peer(kp.getPublic().getEncoded(), "test", 1234);
+            Log.e(TAG, "The simulated reading gave me this:" + pubKeyToString(peerTest.getPublicKey(), 700));
+
+
+            //Correct
+            String toSend = toString(kp.getPublic().getEncoded());
+            Log.e(TAG, "Text to send base 64" + toSend);
+            peerTest = new Peer(fromString(toSend), "test", 1234);
+            Log.e(TAG, "The simulated reading gave me this:" + pubKeyToString(peerTest.getPublicKey(), 700));
+
+*/
+            //Goal
+            //String PK = "308201313081EA06072A8648CE3D02013081DE020101302B06072A8648CE3D010102207FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFED304404202AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA984914A14404207B425ED097B425ED097B425ED097B425ED097B425ED097B4260B5E9C7710C8640441042AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD245A20AE19A1B8A086B4E01EDD2C7748D14C923D4D7E6D7C61B229E9C5A27ECED3D902201000000000000000000000000000000014DEF9DEA2F79CD65812631A5CF5D3ED020108034200044993E3375723F039D38B258DE2F59E01CFADCB559B6DA9E8D878B5D55AB763DF4E8274BBF23469122C9DB555551069ABC6C8FA536268876475E62F52EB0230DB";
+            //Peer peerTest2 = new Peer( null,"test",1234);
+            //peerTest2.setPublicKey(PK.getBytes(Charset.forName("utf-8")));
+            // Log.e(TAG, "The simulated 2 reading gave me this:" + pubKeyToString(peerTest2.getPublicKey(), 700));
+
 
         }
     };
 
+
+   /*
+    private byte[] fromString(String s) {
+        byte[] data = Base64.decode(s, Base64.DEFAULT);
+        return data;
+    }
+
+    */
+
+    /**
+     * Write the object to a Base64 string.
+     */
+   /* private  String toString(byte[] data) throws IOException {
+        String key = Base64.encodeToString(data, Base64.DEFAULT);
+        return key;
+    } */
 
 
     View.OnClickListener resetDatabaseListener = new View.OnClickListener() {
@@ -300,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         });
     }
 
-    public static String getValidatorText (){
+    public static String getValidatorText() {
 
         return validatorText.getText().toString();
     }
@@ -312,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         intIntegrator.setPrompt("Scan Code");
         intIntegrator.setCameraId(0);
         intIntegrator.setBeepEnabled(false);
-        intIntegrator.setBarcodeImageEnabled(false);
+        //intIntegrator.setBarcodeImageEnabled(false);
         intIntegrator.initiateScan();
     }
 
