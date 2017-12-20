@@ -31,5 +31,7 @@ dependencies {
     compile 'com.madgag.spongycastle:core:1.58.0.0'
     compile 'com.madgag.spongycastle:prov:1.58.0.0'
     compile 'com.android.support:design:26.1.0'
+    compile 'com.journeyapps:zxing-android-embedded:3.0.2@aar'
+    compile 'com.google.zxing:core:3.2.0'
     testCompile 'junit:junit:4.12'
 }

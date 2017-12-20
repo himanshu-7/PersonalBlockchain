@@ -44,7 +44,7 @@ public abstract class Communication {
     private KeyPair keyPair;
     private CommunicationListener listener;
 
-    MessageProto.TrustChainBlock blockInVerification;
+   MessageProto.TrustChainBlock blockInVerification;
 
 
     public Communication(TrustChainDBHelper dbHelper, KeyPair kp, CommunicationListener listener) {
