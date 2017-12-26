@@ -14,9 +14,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar"
-
-        >
+        android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity
             android:name=".main.MainActivity"
             android:windowSoftInputMode="stateUnchanged">
@@ -26,18 +24,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".KeyActivity"
             android:label="@string/title_activity_key"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".main.bluetooth.BluetoothActivity"
             android:label="@string/title_activity_bluetooth"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".chainExplorer.ChainExplorerActivity" />
-        <activity android:name=".main.QRCodePrint"></activity>
+        <activity android:name=".main.QRCodePrint" />
+        <activity android:name=".main.ZkpActivity"></activity>
     </application>
 
 </manifest>

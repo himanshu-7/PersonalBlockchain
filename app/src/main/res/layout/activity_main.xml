@@ -168,6 +168,13 @@
                 android:onClick="onClickScanButton"
                 android:text="SCAN QR CODE" />
 
+            <Button
+                android:id="@+id/zkp_lauchButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ZKP"
+                android:onClick="onClickZKPAuthenticate"/>
+
         </LinearLayout>
 
         <android.widget.ScrollView xmlns:android="http://schemas.android.com/apk/res/android"

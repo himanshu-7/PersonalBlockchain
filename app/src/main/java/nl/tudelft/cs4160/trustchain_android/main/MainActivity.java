@@ -430,6 +430,12 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         communication.createNewBlock(peer, toValidateText.getText().toString());
 
     }
+
+    // Start a new activity when the button for ZKP is pressed
+    public void onClickZKPAuthenticate(View view) {
+        Intent myIntent = new Intent(thisActivity, ZkpActivity.class);
+        thisActivity.startActivity(myIntent);
+    }
 }
 
 
