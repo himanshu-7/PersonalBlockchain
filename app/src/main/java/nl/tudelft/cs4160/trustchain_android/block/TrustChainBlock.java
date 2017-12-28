@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import nl.tudelft.cs4160.trustchain_android.Util.Key;
@@ -84,6 +83,22 @@ public class TrustChainBlock {
 
         return builder.build();
     }
+
+
+    //////////////////////////////////////////new function//////////////////////////////////////////////
+    public static MessageProto.UtilComm builderUtilCommBlock(byte[] transaction_value, byte[] zkpRandomNumber,
+                                                             byte[] zkpProofHash, int blockType) {
+
+        MessageProto.UtilComm.Builder builder = MessageProto.UtilComm.newBuilder();
+
+        builder.setTransactionValue(ByteString.copyFrom(transaction_value));
+        builder.setZkpRandomNumber(ByteString.copyFrom(zkpRandomNumber));
+        builder.setZkpProofHash(ByteString.copyFrom(zkpProofHash));
+        builder.setBlockType(blockType);
+
+        return builder.build();
+    }
+    /////////////////////////////////////////////new function///////////////////////////////////////////
 
     public static MessageProto.TrustChainBlock builderFullBlock(TrustChainDBHelper dbHelper,
                                                                 byte[] mypubk, MessageProto.TrustChainBlock linkedBlock,
