@@ -35,7 +35,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".chainExplorer.ChainExplorerActivity" />
         <activity android:name=".main.QRCodePrint" />
-        <activity android:name=".main.ZkpActivity"></activity>
+        <activity android:name=".ZeroKnowledge.ZkpActivity"></activity>
     </application>
 
 </manifest>

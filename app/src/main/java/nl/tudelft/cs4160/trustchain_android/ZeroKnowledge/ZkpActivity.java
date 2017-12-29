@@ -1,4 +1,4 @@
-package nl.tudelft.cs4160.trustchain_android.main;
+package nl.tudelft.cs4160.trustchain_android.ZeroKnowledge;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +16,7 @@ import nl.tudelft.cs4160.trustchain_android.Peer;
 import nl.tudelft.cs4160.trustchain_android.R;
 import nl.tudelft.cs4160.trustchain_android.Util.Key;
 import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
+import nl.tudelft.cs4160.trustchain_android.main.MainActivity;
 
 // TODO: Create a common class for scanning qr codes and halfblock creation
 public class ZkpActivity extends AppCompatActivity {
