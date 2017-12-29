@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.tudelft.cs4160.trustchain_android.Peer;
+import nl.tudelft.cs4160.trustchain_android.ZeroKnowledge.ZkpHashChain;
 import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
 import nl.tudelft.cs4160.trustchain_android.block.ValidationResult;
 import nl.tudelft.cs4160.trustchain_android.connection.network.NetworkCommunication;
@@ -367,6 +368,16 @@ public abstract class Communication {
                         messageLog += "case for zkp authentication half block\n";
                         listener.updateLog("\n  utilComm block received: " + messageLog + "with transaction :" +  block.getTransaction().toStringUtf8());
                         Log.e(TAG, "case for zkp authentication half block\n");
+
+                        //on receiving utilcomm block get the attribute details, generate a random number and send another utilcomm block to the user.
+
+                        String[] attribute_value = prevUtilCommBlock.getTransactionValue().toStringUtf8().split("\\s+");
+                        ZkpHashChain zeroKnowledgeObject = new ZkpHashChain();
+                        zeroKnowledgeObject.zkpAuthenticate(Integer.parseInt(attribute_value[1]));
+                        MessageProto.UtilComm utilCommToUser = createUtilCommBlock("Authentication Successful!!".getBytes(), zeroKnowledgeObject.getRandomProof().getBytes(),NullByte, TrustChainBlock.RANDOM_PROOF_UTILCOMM);
+                        Log.e(TAG,"Sending UtilComm block back to the user along with the zkp random number");
+                        listener.updateLog("\n  Sending UtilComm block....... ");
+                        sendBlock(peer, utilCommToUser);
                         prevUtilCommBlock = null;
                     }
                 }
@@ -401,13 +412,18 @@ public abstract class Communication {
 
             peer.setPublicKey(crawlRequest.getPublicKey().toByteArray());
             this.receivedCrawlRequest(peer, crawlRequest);
+
+
         } else if (block.getPublicKey().size() == 0 && crawlRequest.getPublicKey().size() == 0 && utilComm.getTransactionValue().size() > 0) {
             // If we received utilcomm block
             prevUtilCommBlock = utilComm;
             messageLog += "UtilComm block received from: " + peer.getIpAddress() + ":"
                     + peer.getPort();
             listener.updateLog("\n Server: " + messageLog);
-            Log.e(TAG, " It'a a UtilComm block  with transaction_value : " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
+            if(utilComm.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM) {
+                Log.e(TAG, " It'a a UtilComm block  with transaction_value : " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
+            }
+
         }
     }
 
