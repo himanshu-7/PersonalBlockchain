@@ -376,7 +376,7 @@ public abstract class Communication {
                         zeroKnowledgeObject.zkpAuthenticate(Integer.parseInt(attribute_value[1]));
                         MessageProto.UtilComm utilCommToUser = createUtilCommBlock("Authentication Successful!!".getBytes(), zeroKnowledgeObject.getRandomProof().getBytes(),NullByte, TrustChainBlock.RANDOM_PROOF_UTILCOMM);
                         Log.e(TAG,"Sending UtilComm block back to the user along with the zkp random number");
-                        listener.updateLog("\n  Sending UtilComm block....... ");
+                        listener.updateLog("\n  Sending UtilComm block.......... ");
                         sendBlock(peer, utilCommToUser);
                         prevUtilCommBlock = null;
                     }

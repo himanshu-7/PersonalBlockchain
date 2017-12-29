@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import nl.tudelft.cs4160.trustchain_android.Util.Key;
@@ -30,6 +29,7 @@ public class TrustChainBlock {
     public static final ByteString EMPTY_PK = ByteString.copyFrom(new byte[]{0x00});
     public static final int AUTHENTICATION = 0;
     public static final int AUTHENTICATION_ZKP = 1;
+    public static final int RANDOM_PROOF_UTILCOMM = 3;
 
 
     final static String TAG = "TrustChainBlock";
