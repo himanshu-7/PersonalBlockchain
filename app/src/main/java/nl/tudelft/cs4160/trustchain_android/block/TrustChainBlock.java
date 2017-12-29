@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import nl.tudelft.cs4160.trustchain_android.Util.Key;
@@ -27,6 +28,9 @@ public class TrustChainBlock {
     public static final int UNKNOWN_SEQ = 0;
     public static final ByteString EMPTY_SIG = ByteString.copyFrom(new byte[]{0x00});
     public static final ByteString EMPTY_PK = ByteString.copyFrom(new byte[]{0x00});
+    public static final int AUTHENTICATION = 0;
+    public static final int AUTHENTICATION_ZKP = 1;
+
 
     final static String TAG = "TrustChainBlock";
 
@@ -91,9 +95,36 @@ public class TrustChainBlock {
 
         MessageProto.UtilComm.Builder builder = MessageProto.UtilComm.newBuilder();
 
-        builder.setTransactionValue(ByteString.copyFrom(transaction_value));
-        builder.setZkpRandomNumber(ByteString.copyFrom(zkpRandomNumber));
-        builder.setZkpProofHash(ByteString.copyFrom(zkpProofHash));
+        Log.e(TAG,"builderUtilCommBlock: " + transaction_value.toString());
+        // It is possible that the parameters passed will have null values, so handle them accordingly.
+        if(transaction_value == null)
+        {
+            Log.e(TAG,"Transaction value is null");
+            builder.setTransactionValue(ByteString.EMPTY);
+        }
+        else
+        {
+            Log.e(TAG,"Transaction value has something");
+            builder.setTransactionValue(ByteString.copyFrom(transaction_value));
+        }
+        if(zkpRandomNumber == null)
+        {
+            builder.setTransactionValue(ByteString.EMPTY);
+        }
+        else
+        {
+            builder.setZkpRandomNumber(ByteString.copyFrom(zkpRandomNumber));
+        }
+
+        if(zkpProofHash == null)
+        {
+            builder.setTransactionValue(ByteString.EMPTY);
+        }
+        else
+        {
+            builder.setZkpProofHash(ByteString.copyFrom(zkpProofHash));
+        }
+
         builder.setBlockType(blockType);
 
         return builder.build();

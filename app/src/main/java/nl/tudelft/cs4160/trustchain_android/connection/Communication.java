@@ -50,6 +50,10 @@ public abstract class Communication {
     private static MessageProto.TrustChainBlock blockInVerification;
     private static MessageProto.UtilComm prevUtilCommBlock;
 
+    // Fixme: if any parameter with 'null' is passed all members of block is created as null.
+    // Hence this workaround to pass a "null" byte array.
+    private final static byte [] NullByte = "null".getBytes();
+
     public Communication(TrustChainDBHelper dbHelper, KeyPair kp, CommunicationListener listener) {
         this.dbHelper = dbHelper;
         this.keyPair = kp;
@@ -361,7 +365,7 @@ public abstract class Communication {
                     }
                     else if (prevUtilCommBlock.getBlockType() == 1) {
                         messageLog += "case for zkp authentication half block\n";
-                        listener.updateLog("\n  utilComm block received: " + messageLog);
+                        listener.updateLog("\n  utilComm block received: " + messageLog + "with transaction :" +  block.getTransaction().toStringUtf8());
                         Log.e(TAG, "case for zkp authentication half block\n");
                         prevUtilCommBlock = null;
                     }
@@ -403,9 +407,7 @@ public abstract class Communication {
             messageLog += "UtilComm block received from: " + peer.getIpAddress() + ":"
                     + peer.getPort();
             listener.updateLog("\n Server: " + messageLog);
-            Log.e(TAG, " It'a a UtilComm block  with transaction_value : " + Arrays.toString(utilComm.getTransactionValue().toByteArray()) + "\n zkpRandomNumber :" + Arrays.toString(utilComm.getZkpRandomNumber().toByteArray()) + "\n zkpProofHash :" + Arrays.toString(utilComm.getZkpProofHash().toByteArray()) + "\n and the type of block is :" + utilComm.getBlockType());
-
-
+            Log.e(TAG, " It'a a UtilComm block  with transaction_value : " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
         }
     }
 
@@ -561,7 +563,7 @@ public abstract class Communication {
     }
 
 
-    public void createNewBlock(Peer peer, String transactionMessage) {
+    public void createNewBlock(Peer peer, String transactionMessage,int typeOfBlock) {
 
         if (blockInVerification != null) {
             Log.e(TAG, "There is another block out for the verification, please try later");
@@ -576,28 +578,28 @@ public abstract class Communication {
 
         Log.e(TAG, "Identifier: " + identifier);
         if (hasPublicKey(identifier)) {
-
-            listener.updateLog("Creation of the half block with the transaction: \"" + transactionMessage + "\"");
-            Log.e(TAG, "\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
-            listener.updateLog("\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
-
             peer.setPublicKey(getPublicKey(identifier));
-            //Log.e(TAG, "public key remote: " + getPublicKey(identifier));
 
-            //Simulation: i'm not interested in sending my latest (max 5) block to the other guy
-            //sendLatestBlocksToPeer(peer);
-
+            // Send the UtilComm block first, so that the reciever knows which kind of halfblock it is
             /////////////////////////////////////////////////////////only for testing/////////////////////////////////////
-            byte[] byte_msg = "this is a test transaction_value".getBytes();
-            byte[] zkp_byte = "1209384034985032094".getBytes();
-            byte[] proof_byte = "akp random proof".getBytes();
-            int typeOfBlock = 1;
+            byte[] byte_msg = new byte[0];
+            try {
+                byte_msg = transactionMessage.getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            byte[] zkp_byte = NullByte;
+            byte[] proof_byte = NullByte;
             MessageProto.UtilComm utilComm = createUtilCommBlock(byte_msg,zkp_byte,proof_byte,typeOfBlock);
             Log.e(TAG,"Sending UtilComm block ");
             listener.updateLog("\n  Sending UtilComm block ");
             sendBlock(peer, utilComm);
 
             ////////////////////////////////////////////////////////////////only for testing/////////////////////////////
+
+            listener.updateLog("Creation of the half block with the transaction: \"" + transactionMessage + "\"");
+            Log.e(TAG, "\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
+            //listener.updateLog("\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
 
             try {
                 MessageProto.TrustChainBlock halfBlock = createHalfBlock(transactionMessage.getBytes("UTF-8"), peer);

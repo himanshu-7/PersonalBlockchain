@@ -32,6 +32,7 @@ import java.net.NetworkInterface;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -72,8 +73,9 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     EditText editTextDestinationPort;
 
     MainActivity thisActivity;
-
-    private Communication communication;
+    // Making it public, so other classes can access it
+    // TODO: A better design would be to make NetworkCommunication a singleton class
+    public static Communication communication;
 
     /**
      * Key pair of user
@@ -103,24 +105,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
             communication.simAddPublicKey(getLocalIPAddress(), communication.getMyPublicKey());
             //send either a crawl request or a half block
             //communication.connectToPeer(peer);
-            communication.createNewBlock(peer, toValidateText.getText().toString());
-
-            /*
-            Log.i(TAG, "ciao mamma");
-
-
-            Peer peer = new Peer(null, "192.168.0.1" ,1234);
-
-            //I'm putting in my Map the remote device which have those info
-            communication.simAddPublicKey("192.168.0.1",communication.getMyPublicKey());
-
-
-            communication.connectToPeer(peer);
-
-
-            */
-
-
+            communication.createNewBlock(peer, toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
         }
     };
 
@@ -427,7 +412,10 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         communication.addNewPublicKey(peer);
         Log.e(TAG,"After creating the peer" + Peer.bytesToHex(peer.getPublicKey()));
 
-        communication.createNewBlock(peer, toValidateText.getText().toString());
+        communication.createNewBlock(peer, toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
+
+
+
 
     }
 
