@@ -55,6 +55,10 @@ public abstract class Communication {
     // Hence this workaround to pass a "null" byte array.
     private final static byte [] NullByte = "null".getBytes();
 
+    private static int CurrBlockType;
+    private static byte[] CurrTransactionValue;
+
+
     public Communication(TrustChainDBHelper dbHelper, KeyPair kp, CommunicationListener listener) {
         this.dbHelper = dbHelper;
         this.keyPair = kp;
@@ -153,7 +157,7 @@ public abstract class Communication {
      * <p>
      * Similar to signblock of https://github.com/qstokkink/py-ipv8/blob/master/ipv8/attestation/trustchain/community.pyhttps://github.com/qstokkink/py-ipv8/blob/master/ipv8/attestation/trustchain/community.py
      */
-    public MessageProto.TrustChainBlock createFullBlock(Peer peer, MessageProto.TrustChainBlock linkedBlock) {
+    public MessageProto.TrustChainBlock createFullBlock(Peer peer, MessageProto.TrustChainBlock linkedBlock, int blockType, byte[] transcation_value) {
         // assert that the linked block is not null
         if (linkedBlock == null) {
             Log.e(TAG, "signBlock: Linked block is null.");
@@ -174,21 +178,23 @@ public abstract class Communication {
                 dbHelper,
                 getMyPublicKey(),
                 linkedBlock,
-                peer.getPublicKey());
+                peer.getPublicKey(),
+                blockType,
+                transcation_value);
         //dbHelper.insertInDB(blockLocal);
 
         MessageProto.TrustChainBlock block = builderFullBlock(
                 dbHelper,
                 getMyPublicKey(),
                 linkedBlock,
-                peer.getPublicKey());
+                peer.getPublicKey(),
+                blockType,
+                transcation_value);
 
 
         //remove : here the sign should be stored in an another fields double sign
         block = sign(block, keyPair.getPrivate());
 
-
-        Log.e(TAG, "The pk is:  "+  keyPair.getPrivate());
         Log.e(TAG, "The full block sign is: "+ bytesToHex(block.getSignature().toByteArray()));
 
         ValidationResult validation;
@@ -357,28 +363,42 @@ public abstract class Communication {
 
                 if (block.getLinkSequenceNumber() == TrustChainBlock.UNKNOWN_SEQ) {
                     // In case we received a half block
-                    if (prevUtilCommBlock.getBlockType() == 0) {
+                    if (prevUtilCommBlock.getBlockType() == TrustChainBlock.AUTHENTICATION) {
+                        this.CurrBlockType = TrustChainBlock.AUTHENTICATION;
                         messageLog += "half block received from: " + peer.getIpAddress() + ":" + peer.getPort() + "\n" + TrustChainBlock.toShortString(block);
                         listener.updateLog("\n  half block recived: " + messageLog);
                         addNewPublicKey(peer);
                         this.synchronizedReceivedHalfBlock(peer, block);
                         prevUtilCommBlock = null;
                     }
-                    else if (prevUtilCommBlock.getBlockType() == 1) {
+                    else if (prevUtilCommBlock.getBlockType() == TrustChainBlock.AUTHENTICATION_ZKP)
+                    {
+                        this.CurrBlockType = TrustChainBlock.AUTHENTICATION_ZKP;
                         messageLog += "case for zkp authentication half block\n";
-                        listener.updateLog("\n  utilComm block received: " + messageLog + "with transaction :" +  block.getTransaction().toStringUtf8());
+                        listener.updateLog("\n Transaction value: " + messageLog + "with transaction :" +  block.getTransaction().toStringUtf8());
                         Log.e(TAG, "case for zkp authentication half block\n");
 
                         //on receiving utilcomm block get the attribute details, generate a random number and send another utilcomm block to the user.
 
-                        String[] attribute_value = prevUtilCommBlock.getTransactionValue().toStringUtf8().split("\\s+");
-                        ZkpHashChain zeroKnowledgeObject = new ZkpHashChain();
-                        zeroKnowledgeObject.zkpAuthenticate(Integer.parseInt(attribute_value[1]));
-                        MessageProto.UtilComm utilCommToUser = createUtilCommBlock("Authentication Successful!!".getBytes(), zeroKnowledgeObject.getRandomProof().getBytes(),NullByte, TrustChainBlock.RANDOM_PROOF_UTILCOMM);
-                        Log.e(TAG,"Sending UtilComm block back to the user along with the zkp random number");
-                        listener.updateLog("\n  Sending UtilComm block.......... ");
-                        sendBlock(peer, utilCommToUser);
-                        prevUtilCommBlock = null;
+                        if(prevUtilCommBlock != null) {
+                            String[] attribute_value = prevUtilCommBlock.getTransactionValue().toStringUtf8().split("\\s+");
+                            ZkpHashChain zeroKnowledgeObject = new ZkpHashChain();
+                            zeroKnowledgeObject.zkpAuthenticate(Integer.parseInt(attribute_value[1]));
+                            MessageProto.UtilComm utilCommToUser = createUtilCommBlock("Authentication Successful!!".getBytes(), zeroKnowledgeObject.getRandomProof().getBytes(), NullByte, TrustChainBlock.RANDOM_PROOF_UTILCOMM);
+                            Log.e(TAG, "Sending UtilComm block back to the user along with the zkp random number");
+                            listener.updateLog("\n  Sending UtilComm block.......... ");
+                            sendBlock(peer, utilCommToUser);
+                            prevUtilCommBlock = null;
+                            this.CurrTransactionValue = zeroKnowledgeObject.getSignedDigest();
+                            Log.e(TAG, "Signed digest is " + this.CurrTransactionValue);
+                            // Create a full block now, and send it to the peer.
+                            this.synchronizedReceivedHalfBlock(peer, block);
+                        }
+                        else
+                        {
+                            throw new NullPointerException("prevUtilCommBlock is NULL");
+                        }
+
                     }
                 }
                 else {
@@ -391,6 +411,7 @@ public abstract class Communication {
                     //Check if we have this block out for verification (the comparison should be on the signature1 )
                     if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey())) {
                         //checking of the sign2
+                        Log.e(TAG,"Full Block Transaction value "+ Arrays.toString(block.getTransaction().toByteArray()));
                         listener.updateLog("\n Full block verified and saved");
                         blockInVerification = null;
                         dbHelper.insertInDB(block);
@@ -443,12 +464,14 @@ public abstract class Communication {
 
         //addNewPublicKey(peer);
 
-        if (validatorText.compareTo(block.getTransaction().toStringUtf8()) != 0) {
-            Log.e(TAG, "\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
-            listener.updateLog("\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
-            return;
+        // Do this validation only for a normal half block, this is not applicable to zkp half block
+        if(this.CurrBlockType == TrustChainBlock.AUTHENTICATION) {
+            if (validatorText.compareTo(block.getTransaction().toStringUtf8()) != 0) {
+                Log.e(TAG, "\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
+                listener.updateLog("\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
+                return;
+            }
         }
-
 
         ValidationResult validation;
         try {
@@ -471,29 +494,6 @@ public abstract class Communication {
             //dbHelper.insertInDB(block);
         }
 
-        //Simulation
-       /* byte[] pk = getMyPublicKey();
-        // check if addressed to me and if we did not sign it already, if so: do nothing.
-        if (block.getLinkSequenceNumber() != UNKNOWN_SEQ ||
-                !Arrays.equals(block.getLinkPublicKey().toByteArray(), pk) ||
-                null != dbHelper.getBlock(block.getLinkPublicKey().toByteArray(),
-                        block.getLinkSequenceNumber())) {
-            Log.e(TAG, "Received block not addressed to me or already signed by meX.");
-            return;
-        }else{
-            Log.e(TAG, "Received block  addressed to me and not yet  signed by me.");
-        }
-        // determine if we should sign the block, if not: do nothing
-        if (!Communication.shouldSign(block)) {
-            Log.e(TAG, "Will not sign received block.");
-            return;
-        }else{
-            Log.e(TAG, "I should sign this block");
-        }
-
-        */
-
-
         // check if block matches up with its previous block
         // At this point gaps cannot be tolerated. If we detect a gap we send crawl requests to fill
         // the gap and delay the method until the gap is filled.
@@ -506,7 +506,7 @@ public abstract class Communication {
             // send a crawl request, requesting the last 5 blocks before the received halfblock (if available) of the peer
             sendCrawlRequest(peer, block.getPublicKey().toByteArray(), Math.max(GENESIS_SEQ, block.getSequenceNumber() - 5));
         } else {
-            block = createFullBlock(peer, block);
+            block = createFullBlock(peer, block, this.CurrBlockType, this.CurrTransactionValue);
             if (block != null) {
                 //Not sure if we want to store this block
                 //dbHelper.insertInDB(block);

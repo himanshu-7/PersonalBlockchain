@@ -29,7 +29,7 @@ public class TrustChainBlock {
     public static final ByteString EMPTY_PK = ByteString.copyFrom(new byte[]{0x00});
     public static final int AUTHENTICATION = 0;
     public static final int AUTHENTICATION_ZKP = 1;
-    public static final int RANDOM_PROOF_UTILCOMM = 3;
+    public static final int RANDOM_PROOF_UTILCOMM = 2;
 
 
     final static String TAG = "TrustChainBlock";
@@ -133,12 +133,20 @@ public class TrustChainBlock {
 
     public static MessageProto.TrustChainBlock builderFullBlock(TrustChainDBHelper dbHelper,
                                                                 byte[] mypubk, MessageProto.TrustChainBlock linkedBlock,
-                                                                byte[] linkpubk) {
+                                                                byte[] linkpubk, int block_type,
+                                                                byte[] transaction_value) {
 
         MessageProto.TrustChainBlock latestBlock = dbHelper.getLatestBlock(mypubk);
         MessageProto.TrustChainBlock.Builder builder = MessageProto.TrustChainBlock.newBuilder();
 
-        builder.setTransaction(linkedBlock.getTransaction());
+        if(block_type == TrustChainBlock.AUTHENTICATION)
+        {
+            builder.setTransaction(linkedBlock.getTransaction());
+        }
+        else if(block_type == TrustChainBlock.AUTHENTICATION_ZKP)
+        {
+            builder.setTransaction(ByteString.copyFrom(transaction_value));
+        }
         builder.setLinkPublicKey(ByteString.copyFrom(mypubk));
         if (latestBlock != null) {
             builder.setLinkSequenceNumber(latestBlock.getSequenceNumber() + 1);
@@ -153,7 +161,8 @@ public class TrustChainBlock {
     }
     public static MessageProto.TrustChainBlock builderFullBlockLocal(TrustChainDBHelper dbHelper,
                                                                 byte[] mypubk, MessageProto.TrustChainBlock linkedBlock,
-                                                                byte[] linkpubk) {
+                                                                byte[] linkpubk, int block_type,
+                                                                     byte[] transaction_value) {
 
         MessageProto.TrustChainBlock latestBlock = dbHelper.getLatestBlock(mypubk);
         MessageProto.TrustChainBlock.Builder builder = MessageProto.TrustChainBlock.newBuilder();
@@ -164,7 +173,14 @@ public class TrustChainBlock {
         builder.setPreviousHash(ByteString.copyFrom(hash(latestBlock)));
         builder.setPublicKey(ByteString.copyFrom(mypubk));
 
-        builder.setTransaction(linkedBlock.getTransaction());
+        if(block_type == TrustChainBlock.AUTHENTICATION)
+        {
+            builder.setTransaction(linkedBlock.getTransaction());
+        }
+        else if(block_type == TrustChainBlock.AUTHENTICATION_ZKP)
+        {
+            builder.setTransaction(ByteString.copyFrom(transaction_value));
+        }
         builder.setLinkSequenceNumber(linkedBlock.getSequenceNumber());
         builder.setLinkPublicKey(linkedBlock.getPublicKey());
         builder.setSignature(linkedBlock.getSignature());

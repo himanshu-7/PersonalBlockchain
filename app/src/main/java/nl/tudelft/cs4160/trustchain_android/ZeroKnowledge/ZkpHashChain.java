@@ -14,12 +14,15 @@ public class ZkpHashChain {
         return randomProof;
     }
 
-    public String getSignedDigest() {
+
+    public byte[] getSignedDigest() {
         return signedDigest;
     }
 
     private String randomProof;
-    private String signedDigest;
+    private byte[] signedDigest;
+
+    private static final String TAG = ZkpHashChain.class.getName();
 
     MessageDigest md = null;
 
@@ -45,13 +48,13 @@ public class ZkpHashChain {
                 e.printStackTrace();
             }
         }
-        for(int i=0;i<26;i++)
+        for(int i=0;i<(1+toAuthenticate);i++)
         {
             randomProofBytes = md.digest(randomProofBytes);
         }
 
         // TODO: sign the digest here before assignment.
-        signedDigest = randomProofBytes.toString();
+        signedDigest = randomProofBytes;
 
         return;
     }
