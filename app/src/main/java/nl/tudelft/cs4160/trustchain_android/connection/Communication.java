@@ -461,15 +461,17 @@ public abstract class Communication {
         Log.i(TAG, "Received half block from peer with IP: " + peer.getIpAddress() + ":" + peer.getPort() +
                 " and public key: " + bytesToHex(peer.getPublicKey()));
 
-        String validatorText = AuthenticationActivity.getValidatorText();
+        byte[] validatorHash = TrustChainBlock.hash(AuthenticationActivity.getValidatorText());
 
         //addNewPublicKey(peer);
 
         // Do this validation only for a normal half block, this is not applicable to zkp half block
         if(this.CurrBlockType == TrustChainBlock.AUTHENTICATION) {
-            if (validatorText.compareTo(block.getTransaction().toStringUtf8()) != 0) {
-                Log.e(TAG, "\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
-                listener.updateLog("\n Error: The message has is different: " + block.getTransaction().toStringUtf8() + " != " + validatorText);
+            // Check if the hash of the validator text is same as that recieved in the block.
+            if(!Arrays.equals(validatorHash,block.getTransaction().toByteArray()))
+            {
+                Log.e(TAG, "\n Error: Transaction Hash do not match: " + block.getTransaction().toStringUtf8() + " != " + validatorHash);
+                listener.updateLog("\n Error: Transaction Hash do not match:: " + block.getTransaction().toStringUtf8() + " != " + validatorHash);
                 return;
             }
         }
@@ -598,7 +600,6 @@ public abstract class Communication {
             peer.setPublicKey(getPublicKey(identifier));
 
             // Send the UtilComm block first, so that the reciever knows which kind of halfblock it is
-            /////////////////////////////////////////////////////////only for testing/////////////////////////////////////
             byte[] byte_msg = new byte[0];
             try {
                 byte_msg = transactionMessage.getBytes("UTF-8");
@@ -612,22 +613,19 @@ public abstract class Communication {
             listener.updateLog("\n  Sending UtilComm block ");
             sendBlock(peer, utilComm);
 
-            ////////////////////////////////////////////////////////////////only for testing/////////////////////////////
 
             listener.updateLog("Creation of the half block with the transaction: \"" + transactionMessage + "\"");
             Log.e(TAG, "\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
             //listener.updateLog("\n Ready to be sent to pk: "+ pubKeyToString(getPublicKey(identifier), 32));
 
-            try {
-                MessageProto.TrustChainBlock halfBlock = createHalfBlock(transactionMessage.getBytes("UTF-8"), peer);
-                if (halfBlock != null) {
-                    blockInVerification = halfBlock;
-                    Log.e(TAG,"Sending half block in blockInVerification");
-                    listener.updateLog("\n  Sending half block ");
-                    sendBlock(peer, halfBlock);
-                }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+            // Get the hash of the transaction, as the hash of the transaction must be in the block.
+            byte[] transactionHash = TrustChainBlock.hash(transactionMessage);
+            MessageProto.TrustChainBlock halfBlock = createHalfBlock(transactionHash, peer);
+            if (halfBlock != null) {
+                blockInVerification = halfBlock;
+                Log.e(TAG,"Sending half block in blockInVerification");
+                listener.updateLog("\n  Sending half block ");
+                sendBlock(peer, halfBlock);
             }
 
         } else {

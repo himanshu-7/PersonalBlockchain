@@ -216,6 +216,24 @@ public class TrustChainBlock {
         return md.digest(rawBlock.toByteArray());
     }
 
+    /**
+     * Returns a sha256 hash of a string.
+     *
+     * @param str - a String
+     * @return the sha256 hash of the byte array of the block
+     */
+
+    public static byte[] hash(String str)
+    {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return md.digest(str.getBytes());
+    }
+
 
     /**
      * Signs this block with a given public key.

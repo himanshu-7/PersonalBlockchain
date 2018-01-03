@@ -172,8 +172,8 @@
                 android:id="@+id/zkp_lauchButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="ZKP"
-                android:onClick="onClickZKPAuthenticate"/>
+                android:onClick="onClickZKPAuthenticate"
+                android:text="AUTHENTICATE" />
 
         </LinearLayout>
 
