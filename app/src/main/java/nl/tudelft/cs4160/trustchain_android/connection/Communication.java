@@ -17,6 +17,7 @@ import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
 import nl.tudelft.cs4160.trustchain_android.block.ValidationResult;
 import nl.tudelft.cs4160.trustchain_android.connection.network.NetworkCommunication;
 import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBHelper;
+import nl.tudelft.cs4160.trustchain_android.main.AuthenticationActivity;
 import nl.tudelft.cs4160.trustchain_android.main.MainActivity;
 import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
@@ -460,7 +461,7 @@ public abstract class Communication {
         Log.i(TAG, "Received half block from peer with IP: " + peer.getIpAddress() + ":" + peer.getPort() +
                 " and public key: " + bytesToHex(peer.getPublicKey()));
 
-        String validatorText = MainActivity.getValidatorText();
+        String validatorText = AuthenticationActivity.getValidatorText();
 
         //addNewPublicKey(peer);
 

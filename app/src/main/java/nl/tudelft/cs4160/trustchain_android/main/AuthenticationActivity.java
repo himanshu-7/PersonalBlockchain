@@ -1,4 +1,4 @@
-package nl.tudelft.cs4160.trustchain_android.ZeroKnowledge;
+package nl.tudelft.cs4160.trustchain_android.main;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -19,23 +19,27 @@ import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
 import nl.tudelft.cs4160.trustchain_android.main.MainActivity;
 
 // TODO: Create a common class for scanning qr codes and halfblock creation
-public class ZkpActivity extends AppCompatActivity {
+public class AuthenticationActivity extends AppCompatActivity {
 
     private final static String TAG = MainActivity.class.toString();
+    private String transaction;
+    private int typeOfBlock;
+    private static EditText validatorText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_zkp);
+
+        validatorText = findViewById(R.id.normal_toValidate);
     }
 
     public void onClickScanZkpAuth(View view) {
-        IntentIntegrator intIntegrator = new IntentIntegrator(this);
-        intIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
-        intIntegrator.setPrompt("Scan Code");
-        intIntegrator.setCameraId(0);
-        intIntegrator.setBeepEnabled(false);
-        //intIntegrator.setBarcodeImageEnabled(false);
-        intIntegrator.initiateScan();
+        EditText attribute_text = findViewById(R.id.zkp_attribute);
+        EditText value_text = findViewById(R.id.zkp_value);
+        this.transaction = attribute_text.getText().toString().replaceAll("\\s+","") + " " + value_text.getText().toString();
+        typeOfBlock = TrustChainBlock.AUTHENTICATION_ZKP;
+        startScan();
     }
 
     @Override
@@ -53,11 +57,10 @@ public class ZkpActivity extends AppCompatActivity {
                 // Got text, extract data and connect to the peer now
                 String qrContents;
                 qrContents = res.getContents();
-                // Reading the transaction message here.
-                EditText attribute_text = findViewById(R.id.zkp_attribute);
-                EditText value_text = findViewById(R.id.zkp_value);
-                String zkp_transaction = attribute_text.getText().toString() + " " + value_text.getText().toString();
-                connectToPeer(qrContents, zkp_transaction);
+                if(this.transaction != null)
+                    connectToPeer(qrContents, this.transaction);
+                else
+                    Toast.makeText(this,"Enter data to authenticate",Toast.LENGTH_LONG).show();
             }
         }
         else
@@ -89,9 +92,33 @@ public class ZkpActivity extends AppCompatActivity {
         MainActivity.communication.addNewPublicKey(peer);
         Log.e(TAG,"After creating the peer" + Peer.bytesToHex(peer.getPublicKey()));
 
-        MainActivity.communication.createNewBlock(peer, toAuthenticate, TrustChainBlock.AUTHENTICATION_ZKP);
+        MainActivity.communication.createNewBlock(peer, toAuthenticate, typeOfBlock);
 
     }
 
+
+    public void onClickScanNormalAuth(View view) {
+        EditText transaction_text = findViewById(R.id.normal_toAuthenticate);
+        this.transaction = transaction_text.getText().toString();
+        typeOfBlock = TrustChainBlock.AUTHENTICATION;
+        Log.e(TAG,"The transaction value inside onClick is :" + this.transaction);
+        startScan();
+    }
+
+    private void startScan()
+    {
+        IntentIntegrator intIntegrator = new IntentIntegrator(this);
+        intIntegrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+        intIntegrator.setPrompt("Scan Code");
+        intIntegrator.setCameraId(0);
+        intIntegrator.setBeepEnabled(false);
+        //intIntegrator.setBarcodeImageEnabled(false);
+        intIntegrator.initiateScan();
+    }
+
+
+    public static String getValidatorText() {
+        return validatorText.getText().toString();
+    }
 
 }

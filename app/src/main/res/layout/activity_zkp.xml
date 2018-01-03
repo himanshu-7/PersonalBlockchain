@@ -5,7 +5,57 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="nl.tudelft.cs4160.trustchain_android.ZeroKnowledge.ZkpActivity">
+    tools:context="nl.tudelft.cs4160.trustchain_android.main.AuthenticationActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/normal_authenticate"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Attr.:" />
+
+        <EditText
+            android:id="@+id/normal_toAuthenticate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="Enter Attribute Name" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/normal_tv"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Value.:" />
+
+        <EditText
+            android:id="@+id/normal_toValidate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="Enter Value" />
+    </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClickScanNormalAuth"
+        android:text="Normal Authentication" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -54,6 +104,6 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scan QR Authenticate"
-        android:onClick="onClickScanZkpAuth"/>
+        android:onClick="onClickScanZkpAuth"
+        android:text="ZKP Authentication" />
 </LinearLayout>

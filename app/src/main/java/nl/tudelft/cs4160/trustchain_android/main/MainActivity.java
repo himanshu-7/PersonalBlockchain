@@ -26,7 +26,6 @@ import java.util.List;
 import nl.tudelft.cs4160.trustchain_android.Peer;
 import nl.tudelft.cs4160.trustchain_android.R;
 import nl.tudelft.cs4160.trustchain_android.Util.Key;
-import nl.tudelft.cs4160.trustchain_android.ZeroKnowledge.ZkpActivity;
 import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
 import nl.tudelft.cs4160.trustchain_android.chainExplorer.ChainExplorerActivity;
 import nl.tudelft.cs4160.trustchain_android.connection.Communication;
@@ -406,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
 
     // Start a new activity when the button for ZKP is pressed
     public void onClickZKPAuthenticate(View view) {
-        Intent myIntent = new Intent(thisActivity, ZkpActivity.class);
+        Intent myIntent = new Intent(thisActivity, AuthenticationActivity.class);
         thisActivity.startActivity(myIntent);
     }
 }
