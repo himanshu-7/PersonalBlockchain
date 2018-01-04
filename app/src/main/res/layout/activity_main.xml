@@ -52,12 +52,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Remote IP Address and Port Number:" />
+            android:text="Remote IP Address and Port Number:"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <EditText
                 android:id="@+id/destination_IP"
@@ -79,12 +81,14 @@
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Information To Save In The Blockchain:" />
+            android:text="Information To Save In The Blockchain:"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/textView3"
@@ -106,7 +110,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/textView4"
@@ -134,20 +139,21 @@
                 android:id="@+id/connection_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create Block" />
+                android:text="Create Block"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/chain_explorer_button"
-                android:layout_width="119dp"
+                android:layout_width="156dp"
                 android:layout_height="wrap_content"
-                android:text="EXplorer" />
+                android:text="Chain EXplorer" />
 
             <Button
                 android:id="@+id/reset_database_button"
-                android:layout_width="116dp"
+                android:layout_width="155dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="RESET" />
+                android:text="RESET Program" />
         </LinearLayout>
 
         <LinearLayout
@@ -159,14 +165,16 @@
                 android:id="@+id/bluetooth_connection_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Load QR Code" />
+                android:text="Load QR Code"
+                android:visibility="gone" />
 
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:onClick="onClickScanButton"
-                android:text="SCAN QR CODE" />
+                android:text="SCAN QR CODE"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/zkp_lauchButton"
@@ -174,6 +182,13 @@
                 android:layout_height="wrap_content"
                 android:onClick="onClickZKPAuthenticate"
                 android:text="AUTHENTICATE" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="104dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Validate" />
 
         </LinearLayout>
 

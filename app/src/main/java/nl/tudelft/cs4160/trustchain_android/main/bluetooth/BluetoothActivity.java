@@ -50,7 +50,7 @@ public class BluetoothActivity extends AppCompatActivity implements Communicatio
             Log.e(TAG, "pressed " + device.getName() + "\nUUID: " +device.getUuids()[0].getUuid());
 
             Peer peer = new Peer(device);
-            communication.createNewBlock(peer,"Hello world", TrustChainBlock.AUTHENTICATION);
+            //communication.createNewBlock(peer,"Hello world", TrustChainBlock.AUTHENTICATION);
         }
     };
 
