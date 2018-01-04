@@ -22,7 +22,7 @@ import nl.tudelft.cs4160.trustchain_android.main.MainActivity;
 public class AuthenticationActivity extends AppCompatActivity {
 
     private final static String TAG = MainActivity.class.toString();
-    private String transaction;
+    private static String transaction;
     private int typeOfBlock;
     private static EditText validatorText;
 

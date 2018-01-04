@@ -30,6 +30,7 @@ public class TrustChainBlock {
     public static final int AUTHENTICATION = 0;
     public static final int AUTHENTICATION_ZKP = 1;
     public static final int RANDOM_PROOF_UTILCOMM = 2;
+    public static final int ERROR_AUTH_HASH_MISMATCH = 3;
 
 
     final static String TAG = "TrustChainBlock";

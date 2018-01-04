@@ -1,6 +1,7 @@
 package nl.tudelft.cs4160.trustchain_android.connection;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.protobuf.ByteString;
 
@@ -22,6 +23,7 @@ import nl.tudelft.cs4160.trustchain_android.main.MainActivity;
 import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
 import static nl.tudelft.cs4160.trustchain_android.Peer.bytesToHex;
+import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.ERROR_AUTH_HASH_MISMATCH;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.GENESIS_SEQ;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.builderFullBlock;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.builderFullBlockLocal;
@@ -443,12 +445,29 @@ public abstract class Communication {
                     + peer.getPort();
             listener.updateLog("\n Server: " + messageLog);
             if(utilComm.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM) {
-                Log.e(TAG, " It'a a UtilComm block  with transaction_value : " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
+                Log.e(TAG, " It'a a UtilComm block RANDOM_PROOF_UTILCOMM with transaction_value : " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
+            }
+            else if(utilComm.getBlockType() == TrustChainBlock.ERROR_AUTH_HASH_MISMATCH)
+            {
+                Log.e(TAG, " It'a a UtilComm Error block ERROR_AUTH_HASH_MISMATCH: " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
+                blockInVerification = null; // This will allow again to send a new half block
             }
 
         }
     }
 
+    /**
+     * Send a UtilComm Error Block to the connected Peer
+     */
+    void sendErrorBlock(Peer peer, int typeOfError)
+    {
+        byte[] zkp_byte = NullByte;
+        byte[] proof_byte = NullByte;
+        byte[] msg = NullByte;
+        MessageProto.UtilComm utilComm = createUtilCommBlock(msg,zkp_byte,proof_byte,typeOfError);
+        Log.e(TAG,"Sending an Error UtilComm block to peer " + typeOfError);
+        sendBlock(peer,utilComm);
+    }
     /**
      * A half block was send to us and received by us. Someone wants this peer to create the other half
      * and send it back. This method handles that 'request'.
@@ -472,6 +491,7 @@ public abstract class Communication {
             {
                 Log.e(TAG, "\n Error: Transaction Hash do not match: " + block.getTransaction().toStringUtf8() + " != " + validatorHash);
                 listener.updateLog("\n Error: Transaction Hash do not match:: " + block.getTransaction().toStringUtf8() + " != " + validatorHash);
+                sendErrorBlock(peer, TrustChainBlock.ERROR_AUTH_HASH_MISMATCH);
                 return;
             }
         }
