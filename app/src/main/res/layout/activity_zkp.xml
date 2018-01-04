@@ -14,19 +14,26 @@
 
         <TextView
             android:id="@+id/normal_authenticate"
-            android:layout_width="110dp"
+            android:layout_width="17dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Attr.:" />
 
         <EditText
             android:id="@+id/normal_toAuthenticate"
-            android:layout_width="match_parent"
+            android:layout_width="149dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
             android:inputType="textPersonName"
             android:text="Enter Attribute Name" />
+
+        <Spinner
+            android:id="@+id/normal_typeSpinner"
+            android:layout_width="98dp"
+            android:layout_height="42dp"
+            android:layout_weight="1" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -64,19 +71,25 @@
 
         <TextView
             android:id="@+id/tv_authenticate"
-            android:layout_width="110dp"
+            android:layout_width="21dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Attr.:" />
 
         <EditText
             android:id="@+id/zkp_attribute"
-            android:layout_width="match_parent"
+            android:layout_width="152dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
             android:inputType="textPersonName"
             android:text="Enter Attribute Name" />
+
+        <Spinner
+            android:id="@+id/zkp_typeSpinner"
+            android:layout_width="98dp"
+            android:layout_height="42dp"
+            android:layout_weight="1" />
     </LinearLayout>
 
     <LinearLayout
@@ -106,4 +119,20 @@
         android:layout_height="wrap_content"
         android:onClick="onClickScanZkpAuth"
         android:text="ZKP Authentication" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="32dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Authority Section:" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClickLoadQRCode"
+        android:text="Load QRCode" />
+
 </LinearLayout>

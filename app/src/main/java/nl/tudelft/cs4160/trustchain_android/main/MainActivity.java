@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
             communication.simAddPublicKey(getLocalIPAddress(), communication.getMyPublicKey());
             //send either a crawl request or a half block
             //communication.connectToPeer(peer);
-            communication.createNewBlock(peer, toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
+            communication.createNewBlock(peer, -1, toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
         }
     };
 
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
 
         if (isStartedFirstTime()) {
             MessageProto.TrustChainBlock block = TrustChainBlock.createGenesisBlock(kp);
-            dbHelper.insertInDB(block);
+            dbHelper.insertInDB(block,-1,null);
         }
 
         communication = new NetworkCommunication(dbHelper, kp, this);
@@ -396,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         communication.addNewPublicKey(peer);
         Log.e(TAG,"After creating the peer" + Peer.bytesToHex(peer.getPublicKey()));
 
-        communication.createNewBlock(peer, toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
+        communication.createNewBlock(peer, -1,toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
 
 
 
