@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -28,12 +27,11 @@ import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
 import nl.tudelft.cs4160.trustchain_android.connection.network.NetworkCommunication;
 import nl.tudelft.cs4160.trustchain_android.database.BlockDescription;
 import nl.tudelft.cs4160.trustchain_android.database.Types;
-import nl.tudelft.cs4160.trustchain_android.main.MainActivity;
 
 // TODO: Create a common class for scanning qr codes and halfblock creation
 public class AuthenticationActivity extends AppCompatActivity {
 
-    private final static String TAG = MainActivity.class.toString();
+    private final static String TAG = AuthenticationActivity.class.toString();
     private static String transaction;
     private static int typeOfTransaction;
     private int typeOfBlock;
@@ -47,7 +45,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_zkp);
+        setContentView(R.layout.activity_authentication);
 
         validatorText = findViewById(R.id.normal_toValidate);
 

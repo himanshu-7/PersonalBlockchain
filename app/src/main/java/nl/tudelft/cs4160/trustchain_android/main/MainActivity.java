@@ -42,7 +42,11 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     public final static String TRANSACTION = "Hello world!";
     private final static String TAG = MainActivity.class.toString();
 
-    TrustChainDBHelper dbHelper;
+    public static TrustChainDBHelper getDbHelper() {
+        return dbHelper;
+    }
+
+    static TrustChainDBHelper dbHelper;
 
     TextView externalIPText;
     TextView localIPText;
@@ -403,10 +407,16 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
 
     }
 
-    // Start a new activity when the button for ZKP is pressed
+    // Start a new activity when the button for Authentication is pressed
     public void onClickZKPAuthenticate(View view) {
         Intent myIntent = new Intent(thisActivity, AuthenticationActivity.class);
         thisActivity.startActivity(myIntent);
+    }
+
+    // Start a new activity when the validation buttton is pressed.
+    public void onClickValidateButton(View view) {
+        Intent intent = new Intent(this, ValidationActivity.class);
+        thisActivity.startActivity(intent);
     }
 }
 
