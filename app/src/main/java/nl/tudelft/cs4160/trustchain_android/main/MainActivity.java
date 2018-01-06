@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     // Making it public, so other classes can access it
     // TODO: A better design would be to make NetworkCommunication a singleton class
     public static Communication communication;
-
     /**
      * Key pair of user
      */
@@ -307,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
      *
      * @return a string representation of the device's IP address
      */
-    public String getLocalIPAddress() {
+    public static String getLocalIPAddress() {
         try {
             List<NetworkInterface> netInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface netInt : netInterfaces) {

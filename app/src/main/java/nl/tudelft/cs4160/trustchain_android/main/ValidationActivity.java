@@ -1,8 +1,11 @@
 package nl.tudelft.cs4160.trustchain_android.main;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,12 +15,17 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.security.KeyPair;
 import java.util.List;
 
+import nl.tudelft.cs4160.trustchain_android.Peer;
 import nl.tudelft.cs4160.trustchain_android.R;
+import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
+import nl.tudelft.cs4160.trustchain_android.connection.network.NetworkCommunication;
 import nl.tudelft.cs4160.trustchain_android.database.BlockDescription;
 import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBHelper;
 import nl.tudelft.cs4160.trustchain_android.database.Types;
+import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
 import static nl.tudelft.cs4160.trustchain_android.main.MainActivity.getDbHelper;
 
@@ -27,7 +35,8 @@ public class ValidationActivity extends AppCompatActivity {
     private Types types;
     private final static String TAG = ValidationActivity.class.toString();
     private TrustChainDBHelper dbHelper;
-
+    private static BlockDescription blockDescription;
+    private static Peer peer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +53,21 @@ public class ValidationActivity extends AppCompatActivity {
 
     }
 
+    // Generate QR code with
+    // -String to be validated
+    // -My local IP address
+    // -My port
     public void onClickGenValidator(View view) {
         Intent intent = new Intent(this, QRCodePrint.class);
         String toValidate = val_typeSpinner.getSelectedItem().toString();
-        intent.putExtra("MESSAGE", toValidate);
+
+        String ipToSend = "";
+        String portToSend = NetworkCommunication.DEFAULT_PORT + "";
+        ipToSend = MainActivity.getLocalIPAddress();
+
+        String message = toValidate + "," + ipToSend + "," + portToSend;
+
+        intent.putExtra("MESSAGE", message);
         startActivity(intent);
     }
 
@@ -72,7 +92,15 @@ public class ValidationActivity extends AppCompatActivity {
                 // Got text, extract data and connect to the peer now
                 String qrContents;
                 qrContents = res.getContents();
-                startValidation(qrContents);
+                String[] qrArray = qrContents.split(",");
+                if(qrArray[0] != null && qrArray[1]!=null && qrArray[2]!=null)
+                {
+                    checkBlockPresence(qrArray[0], qrArray[1], qrArray[2]);
+                }
+                else
+                {
+                    Toast.makeText(this, "QR not generated properly", Toast.LENGTH_LONG).show();
+                }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -83,21 +111,15 @@ public class ValidationActivity extends AppCompatActivity {
 
     // Depending on the QR read contents start the validation proceedure
     // - Checks if the 'toValidate' is present in the local blockchain
-    // - TODO: Sends the respective full block if present
-    private void startValidation(String toValidate) {
-        if(toValidate == null)
-        {
-            Toast.makeText(this, "QR Validation string empty!!", Toast.LENGTH_LONG).show();
-            return;
-        }
-
+    private void checkBlockPresence(String toValidate, String ipToConnect, String portToConnect)
+    {
         int toValidateID = types.findTypeIDByDescription(toValidate);
         if(toValidateID == -1)
         {
             Log.e(TAG, "Validation ID not present in the list:" );
         }
 
-        BlockDescription blockDescription = dbHelper.getBlockDescriptionByTypeID(toValidateID);
+        blockDescription = dbHelper.getBlockDescriptionByTypeID(toValidateID);
 
         if(blockDescription == null)
         {
@@ -105,11 +127,60 @@ public class ValidationActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, toValidate + " present in Blockchain!!", Toast.LENGTH_LONG).show();
+        // Create the peer to communicate with
+        peer = new Peer(null, ipToConnect, Integer.parseInt(portToConnect));
 
+        // Check if User would like to share his details
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Permission");
+        builder.setMessage("Share my "+ toValidate + "?");
+
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+                sendValidationBlock();
+            }
+        });
+
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+                Toast.makeText(getApplicationContext(), "Not sharing details", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
-    public void onClickValidate(View view) {
+    private void sendValidationBlock()
+    {
+        int sequence_number = blockDescription.sequence_number;
+        //Toast.makeText(this, "Sending Validation Block "+ sequence_number, Toast.LENGTH_LONG).show();
+
+        byte[] publicKey = MainActivity.kp.getPublic().getEncoded();
+        MessageProto.TrustChainBlock block = dbHelper.getBlock(publicKey,sequence_number);
+
+        if(block == null)
+        {
+            Log.e(TAG, "Error: Block not found in Database, sequence_number " + sequence_number );
+            return;
+        }
+
+        Toast.makeText(this, "Block found "+ sequence_number, Toast.LENGTH_LONG).show();
+
+        // We have the block and also peer information, can send the block now
+        // TODO: Send Utilcomm message for differentiating between zkp and normal block and send the full block next
+        // MainActivity.communication.sendBlock(peer,block);
+    }
+
+    public void onClickValidate(View view)
+    {
         startScan();
     }
 }
