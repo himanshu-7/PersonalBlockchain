@@ -27,6 +27,7 @@ import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBHelper;
 import nl.tudelft.cs4160.trustchain_android.database.Types;
 import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
+import static nl.tudelft.cs4160.trustchain_android.main.MainActivity.communication;
 import static nl.tudelft.cs4160.trustchain_android.main.MainActivity.getDbHelper;
 
 public class ValidationActivity extends AppCompatActivity {
@@ -37,6 +38,7 @@ public class ValidationActivity extends AppCompatActivity {
     private TrustChainDBHelper dbHelper;
     private static BlockDescription blockDescription;
     private static Peer peer;
+    private final static byte[] NullByte = "null".getBytes();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,13 +112,14 @@ public class ValidationActivity extends AppCompatActivity {
 
 
     // Depending on the QR read contents start the validation proceedure
-    // - Checks if the 'toValidate' is present in the local blockchain
+    // - Checks if 'toValidate' is present in the local blockchain
     private void checkBlockPresence(String toValidate, String ipToConnect, String portToConnect)
     {
         int toValidateID = types.findTypeIDByDescription(toValidate);
         if(toValidateID == -1)
         {
-            Log.e(TAG, "Validation ID not present in the list:" );
+            Log.e(TAG, "Error Validation ID not present in the list:" );
+            return;
         }
 
         blockDescription = dbHelper.getBlockDescriptionByTypeID(toValidateID);
@@ -176,8 +179,34 @@ public class ValidationActivity extends AppCompatActivity {
 
         // We have the block and also peer information, can send the block now
         // TODO: Send Utilcomm message for differentiating between zkp and normal block and send the full block next
-        // MainActivity.communication.sendBlock(peer,block);
+        // First send a Utilcomm block so that the validator knows what block he will be receiving next
+        MessageProto.UtilComm utilValBlock = communication.createUtilCommBlock(NullByte,NullByte,NullByte,TrustChainBlock.VALIDATION_NORMAL);
+        communication.sendBlock(peer, utilValBlock);
+
+        // Send the full block
+        communication.sendBlock(peer,block);
     }
+
+    public static void ValidateBlock(MessageProto.UtilComm utilComm, MessageProto.TrustChainBlock block, Peer to_peer)
+    {
+        int validationResult = TrustChainBlock.VALIDATION_FAILURE;
+
+        if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_NORMAL)
+        {
+            // TODO: validate the block.
+            validationResult = TrustChainBlock.VALIDATION_SUCCESS;
+        }
+        else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_ZKP)
+        {
+            // TODO: validate the block.
+            validationResult = TrustChainBlock.VALIDATION_SUCCESS;
+        }
+
+        MessageProto.UtilComm ValResult = communication.createUtilCommBlock(NullByte,NullByte,NullByte,validationResult);
+        communication.sendBlock(to_peer, ValResult);
+
+    }
+
 
     public void onClickValidate(View view)
     {

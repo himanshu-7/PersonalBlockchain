@@ -22,6 +22,7 @@ import nl.tudelft.cs4160.trustchain_android.database.BlockDescription;
 import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBHelper;
 import nl.tudelft.cs4160.trustchain_android.database.Types;
 import nl.tudelft.cs4160.trustchain_android.main.AuthenticationActivity;
+import nl.tudelft.cs4160.trustchain_android.main.ValidationActivity;
 import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
 import static nl.tudelft.cs4160.trustchain_android.Peer.bytesToHex;
@@ -406,13 +407,25 @@ public abstract class Communication {
                 }
             } else {
                 //In case we received a full block
-                listener.updateLog("\n  I got a full block bro");
+                // - It can be a full block received after authentication
+                // - It can be a full block received for validation.
+
                 listener.updateLog("\n" + TrustChainBlock.toShortString(block));
                 Log.e(TAG, "I got a full block from: " + peer.getIpAddress());
 
+                // TODO: Not a good design, restructure the code!!
+                if(prevUtilCommBlock != null) {
+                    if (prevUtilCommBlock.getBlockType() == TrustChainBlock.VALIDATION_NORMAL || prevUtilCommBlock.getBlockType() == TrustChainBlock.VALIDATION_ZKP) {
+                        ValidationActivity.ValidateBlock(prevUtilCommBlock, block, peer);
+                        prevUtilCommBlock = null;
+                        return;
+                    }
+                }
+
                 if (blockInVerification != null) {
                     //Check if we have this block out for verification (the comparison should be on the signature1 )
-                    if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey())) {
+                    if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey()))
+                    {
                         //checking of the sign2
                         Log.e(TAG, "Full Block Transaction value " + Arrays.toString(block.getTransaction().toByteArray()));
                         listener.updateLog("\n Full block verified and saved");
@@ -445,7 +458,8 @@ public abstract class Communication {
             messageLog += "UtilComm block received from: " + peer.getIpAddress() + ":"
                     + peer.getPort();
             listener.updateLog("\n Server: " + messageLog);
-            if(utilComm.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM) {
+            if(utilComm.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM)
+            {
                 Log.e(TAG, " It'a a UtilComm block RANDOM_PROOF_UTILCOMM with transaction_value : " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
             }
             else if(utilComm.getBlockType() == TrustChainBlock.ERROR_AUTH_HASH_MISMATCH)
@@ -453,7 +467,21 @@ public abstract class Communication {
                 Log.e(TAG, " It'a a UtilComm Error block ERROR_AUTH_HASH_MISMATCH: " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
                 blockInVerification = null; // This will allow again to send a new half block
             }
-
+            else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_NORMAL  || utilComm.getBlockType() == TrustChainBlock.VALIDATION_ZKP)
+            {
+                Log.e(TAG, "It's a UtilComm Block for Validation");
+                // Nothing to be done, as this block would be useful when we recieve a full block for validation.
+            }
+            else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_SUCCESS)
+            {
+                Log.e(TAG, "Validation successful");
+                prevUtilCommBlock = null;
+            }
+            else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_FAILURE)
+            {
+                Log.e(TAG,"Validation Failure");
+                prevUtilCommBlock = null;
+            }
         }
     }
 
