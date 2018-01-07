@@ -79,6 +79,15 @@ public class Types {
         return null;
     }
 
+    public boolean isZkpCompatible(int ID){
+        for(Type type: types){
+            if(type.typeID == ID) {
+                return type.ZKPCompatible;
+            }
+        }
+        return false;
+    }
+
 }
 
 

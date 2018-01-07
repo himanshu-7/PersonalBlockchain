@@ -15,7 +15,9 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
+import java.util.Arrays;
 import java.util.List;
 
 import nl.tudelft.cs4160.trustchain_android.Peer;
@@ -56,7 +58,7 @@ public class ValidationActivity extends AppCompatActivity {
     }
 
     // Generate QR code with
-    // -String to be validated
+    // -Attribute to be validated
     // -My local IP address
     // -My port
     public void onClickGenValidator(View view) {
@@ -115,7 +117,7 @@ public class ValidationActivity extends AppCompatActivity {
     // - Checks if 'toValidate' is present in the local blockchain
     private void checkBlockPresence(String toValidate, String ipToConnect, String portToConnect)
     {
-        int toValidateID = types.findTypeIDByDescription(toValidate);
+        final int toValidateID = types.findTypeIDByDescription(toValidate);
         if(toValidateID == -1)
         {
             Log.e(TAG, "Error Validation ID not present in the list:" );
@@ -143,7 +145,7 @@ public class ValidationActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which)
             {
                 dialog.dismiss();
-                sendValidationBlock();
+                sendValidationBlock(types.isZkpCompatible(toValidateID));
             }
         });
 
@@ -161,7 +163,7 @@ public class ValidationActivity extends AppCompatActivity {
         alert.show();
     }
 
-    private void sendValidationBlock()
+    private void sendValidationBlock(boolean isZkpBlock)
     {
         int sequence_number = blockDescription.sequence_number;
         //Toast.makeText(this, "Sending Validation Block "+ sequence_number, Toast.LENGTH_LONG).show();
@@ -177,24 +179,55 @@ public class ValidationActivity extends AppCompatActivity {
 
         Toast.makeText(this, "Block found "+ sequence_number, Toast.LENGTH_LONG).show();
 
-        // We have the block and also peer information, can send the block now
-        // TODO: Send Utilcomm message for differentiating between zkp and normal block and send the full block next
-        // First send a Utilcomm block so that the validator knows what block he will be receiving next
-        MessageProto.UtilComm utilValBlock = communication.createUtilCommBlock(NullByte,NullByte,NullByte,TrustChainBlock.VALIDATION_NORMAL);
-        communication.sendBlock(peer, utilValBlock);
+        if(isZkpBlock == false) {
+            // We have the block and also peer information, can send the block now
+            // TODO: Send Utilcomm message for differentiating between zkp and normal block and send the full block next
+            // First send a Utilcomm block so that the validator knows what block he will be receiving next
+            byte []toValidate = new byte[0];;
+            try {
+                 toValidate = blockDescription.value.getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            MessageProto.UtilComm utilValBlock = communication.createUtilCommBlock(toValidate, NullByte, NullByte, TrustChainBlock.VALIDATION_NORMAL);
+            communication.sendBlock(peer, utilValBlock);
 
-        // Send the full block
-        communication.sendBlock(peer,block);
+            Log.e(TAG,"Hash value before sending for validation "+ Arrays.toString(block.getTransaction().toByteArray()));
+            // Send the full block
+            communication.sendBlock(peer, block);
+        }
+        else
+        {
+            Toast.makeText(this, "ZKP Block: TODO", Toast.LENGTH_LONG).show();
+        }
     }
 
     public static void ValidateBlock(MessageProto.UtilComm utilComm, MessageProto.TrustChainBlock block, Peer to_peer)
     {
         int validationResult = TrustChainBlock.VALIDATION_FAILURE;
 
+        String toValidate = "";
         if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_NORMAL)
         {
-            // TODO: validate the block.
-            validationResult = TrustChainBlock.VALIDATION_SUCCESS;
+            try {
+                toValidate = utilComm.getTransactionValue().toString("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            byte[] hashInBlock = Base64.decode(block.getTransaction().toByteArray(),Base64.DEFAULT);
+
+            if(Arrays.equals(hashInBlock, TrustChainBlock.hash(toValidate)))
+            {
+                // TODO: Check for signature of authority here, before setting the result to success.
+                validationResult = TrustChainBlock.VALIDATION_SUCCESS;
+                Log.e(TAG, "Normal validation success");
+            }
+            else
+            {
+                validationResult = TrustChainBlock.VALIDATION_FAILURE;
+                Log.e(TAG, "Normal validation failure");
+            }
         }
         else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_ZKP)
         {
