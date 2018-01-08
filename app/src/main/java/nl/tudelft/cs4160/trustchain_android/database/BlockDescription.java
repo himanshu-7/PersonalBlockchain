@@ -6,7 +6,7 @@ package nl.tudelft.cs4160.trustchain_android.database;
 
 public class BlockDescription {
     public int typeID;
-    public String value;
+    public String  value;
     public int sequence_number;
 
 

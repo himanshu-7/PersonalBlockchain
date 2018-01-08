@@ -34,7 +34,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     private final static String TAG = AuthenticationActivity.class.toString();
     private static String transaction;
     private static int typeOfTransaction;
-    private int typeOfBlock;
+    private static int typeOfBlock;
     private static EditText validatorText;
     private Spinner normal_typeSpinner;
     private Spinner zkp_typeSpinner;
@@ -71,7 +71,17 @@ public class AuthenticationActivity extends AppCompatActivity {
     public void onClickScanZkpAuth(View view) {
             EditText attribute_text = findViewById(R.id.zkp_attribute);
             EditText value_text = findViewById(R.id.zkp_value);
-            this.transaction = attribute_text.getText().toString().replaceAll("\\s+", "") + " " + value_text.getText().toString();
+            //this.transaction = attribute_text.getText().toString().replaceAll("\\s+", "") + " " + value_text.getText().toString();
+            try
+            {
+                Integer.parseInt(value_text.getText().toString());
+            }
+            catch (NumberFormatException nfe)
+            {
+                Toast.makeText(this, "Not a number", Toast.LENGTH_LONG).show();
+                return;
+            }
+            this.transaction = value_text.getText().toString();
             this.typeOfTransaction = types.findTypeIDByDescription(zkp_typeSpinner.getSelectedItem().toString());
             typeOfBlock = TrustChainBlock.AUTHENTICATION_ZKP;
             startScan();
@@ -132,7 +142,6 @@ public class AuthenticationActivity extends AppCompatActivity {
                 // Got text, extract data and connect to the peer now
                 String qrContents;
                 qrContents = res.getContents();
-                Toast.makeText(this, "The selected type is: "+this.typeOfTransaction, Toast.LENGTH_LONG).show();
 
                 if (this.transaction != null)
                     connectToPeer(qrContents, this.typeOfTransaction, this.transaction);

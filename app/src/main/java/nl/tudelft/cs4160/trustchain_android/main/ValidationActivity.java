@@ -9,6 +9,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -16,12 +17,14 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.security.KeyPair;
 import java.util.Arrays;
 import java.util.List;
 
 import nl.tudelft.cs4160.trustchain_android.Peer;
 import nl.tudelft.cs4160.trustchain_android.R;
+import nl.tudelft.cs4160.trustchain_android.ZeroKnowledge.ZkpHashChain;
 import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
 import nl.tudelft.cs4160.trustchain_android.connection.network.NetworkCommunication;
 import nl.tudelft.cs4160.trustchain_android.database.BlockDescription;
@@ -35,12 +38,16 @@ import static nl.tudelft.cs4160.trustchain_android.main.MainActivity.getDbHelper
 public class ValidationActivity extends AppCompatActivity {
 
     private Spinner val_typeSpinner;
+    private Spinner val_typSpinnerZkp;
     private Types types;
     private final static String TAG = ValidationActivity.class.toString();
     private TrustChainDBHelper dbHelper;
     private static BlockDescription blockDescription;
     private static Peer peer;
     private final static byte[] NullByte = "null".getBytes();
+    private static int EditTextZkpMinNumber;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +62,12 @@ public class ValidationActivity extends AppCompatActivity {
         val_typeSpinner = (Spinner) findViewById(R.id.validation_typeSpinner);
         val_typeSpinner.setAdapter(adapter);
 
+        spinnerArray = types.getTypesZKP(null);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinnerArray);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        val_typSpinnerZkp = (Spinner) findViewById(R.id.validation_typeSpinner_zkp);
+        val_typSpinnerZkp.setAdapter(adapter);
+
     }
 
     // Generate QR code with
@@ -62,8 +75,13 @@ public class ValidationActivity extends AppCompatActivity {
     // -My local IP address
     // -My port
     public void onClickGenValidator(View view) {
-        Intent intent = new Intent(this, QRCodePrint.class);
         String toValidate = val_typeSpinner.getSelectedItem().toString();
+        genQrCode(toValidate);
+    }
+
+    private  void genQrCode(String toValidate)
+    {
+        Intent intent = new Intent(this, QRCodePrint.class);
 
         String ipToSend = "";
         String portToSend = NetworkCommunication.DEFAULT_PORT + "";
@@ -73,6 +91,28 @@ public class ValidationActivity extends AppCompatActivity {
 
         intent.putExtra("MESSAGE", message);
         startActivity(intent);
+
+    }
+
+    public void onClickGenValidatorZkp(View view){
+
+        String toValidate = val_typSpinnerZkp.getSelectedItem().toString();
+        EditText editText = findViewById(R.id.val_editText_zkp);
+        String text = editText.getText().toString();
+
+        try
+        {
+            EditTextZkpMinNumber = Integer.parseInt(text);
+        }
+        catch (NumberFormatException nfe)
+        {
+            Toast.makeText(this, "Not an integer", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        toValidate = toValidate + ":" + text;
+        genQrCode(toValidate);
+
     }
 
     private void startScan() {
@@ -97,9 +137,15 @@ public class ValidationActivity extends AppCompatActivity {
                 String qrContents;
                 qrContents = res.getContents();
                 String[] qrArray = qrContents.split(",");
+
                 if(qrArray[0] != null && qrArray[1]!=null && qrArray[2]!=null)
                 {
-                    checkBlockPresence(qrArray[0], qrArray[1], qrArray[2]);
+                    String []toValidateStrArray = qrArray[0].split(":");
+
+                    if(toValidateStrArray.length == 2)
+                        checkBlockPresence(toValidateStrArray[0], qrArray[1], qrArray[2], toValidateStrArray[1]);
+                    else
+                        checkBlockPresence(toValidateStrArray[0], qrArray[1], qrArray[2], null);
                 }
                 else
                 {
@@ -115,7 +161,7 @@ public class ValidationActivity extends AppCompatActivity {
 
     // Depending on the QR read contents start the validation proceedure
     // - Checks if 'toValidate' is present in the local blockchain
-    private void checkBlockPresence(String toValidate, String ipToConnect, String portToConnect)
+    private void checkBlockPresence(String toValidate, String ipToConnect, String portToConnect, final String toValidateZkpMin)
     {
         final int toValidateID = types.findTypeIDByDescription(toValidate);
         if(toValidateID == -1)
@@ -128,7 +174,7 @@ public class ValidationActivity extends AppCompatActivity {
 
         if(blockDescription == null)
         {
-            Toast.makeText(this, toValidate + " not in Blockchain!!", Toast.LENGTH_LONG).show();
+            showAlertDialog(toValidate + " not in Blockchain!!");
             return;
         }
 
@@ -145,7 +191,23 @@ public class ValidationActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which)
             {
                 dialog.dismiss();
-                sendValidationBlock(types.isZkpCompatible(toValidateID));
+                if(types.isZkpCompatible(toValidateID)) {
+                    int zkpMinVal;
+                    try
+                    {
+                        zkpMinVal = Integer.parseInt(toValidateZkpMin);
+                    }
+                    catch (NumberFormatException nfe)
+                    {
+                        Log.e(TAG,"ERROR: ZKP not an integer");
+                        return;
+                    }
+                    sendValidationBlock(true, zkpMinVal);
+                }
+                else
+                {
+                    sendValidationBlock(false, 0);
+                }
             }
         });
 
@@ -163,7 +225,7 @@ public class ValidationActivity extends AppCompatActivity {
         alert.show();
     }
 
-    private void sendValidationBlock(boolean isZkpBlock)
+    private void sendValidationBlock(boolean isZkpBlock, int zkpMinVal)
     {
         int sequence_number = blockDescription.sequence_number;
         //Toast.makeText(this, "Sending Validation Block "+ sequence_number, Toast.LENGTH_LONG).show();
@@ -181,7 +243,6 @@ public class ValidationActivity extends AppCompatActivity {
 
         if(isZkpBlock == false) {
             // We have the block and also peer information, can send the block now
-            // TODO: Send Utilcomm message for differentiating between zkp and normal block and send the full block next
             // First send a Utilcomm block so that the validator knows what block he will be receiving next
             byte []toValidate = new byte[0];;
             try {
@@ -192,13 +253,34 @@ public class ValidationActivity extends AppCompatActivity {
             MessageProto.UtilComm utilValBlock = communication.createUtilCommBlock(toValidate, NullByte, NullByte, TrustChainBlock.VALIDATION_NORMAL);
             communication.sendBlock(peer, utilValBlock);
 
-            Log.e(TAG,"Hash value before sending for validation "+ Arrays.toString(block.getTransaction().toByteArray()));
+            //Log.e(TAG,"Hash value before sending for validation "+ Arrays.toString(block.getTransaction().toByteArray()));
             // Send the full block
             communication.sendBlock(peer, block);
         }
         else
         {
-            Toast.makeText(this, "ZKP Block: TODO", Toast.LENGTH_LONG).show();
+            ZkpHashChain zkpObj = new ZkpHashChain();
+            // Read the random number and the actual value from the blockDescription
+            String[] parser = blockDescription.value.split(":");
+            String random = parser[0];
+            int authenicatedValue = Integer.parseInt(parser[1]);
+            byte []zkpProofHash;
+
+            if(authenicatedValue >= zkpMinVal)
+            {
+                zkpProofHash = zkpObj.genVerificationProof(random,authenicatedValue,zkpMinVal);
+                MessageProto.UtilComm utilValBlock = communication.createUtilCommBlock(NullByte, NullByte, zkpProofHash, TrustChainBlock.VALIDATION_ZKP);
+                communication.sendBlock(peer, utilValBlock);
+
+                // Now send the full block
+                communication.sendBlock(peer, block);
+            }
+            else
+            {
+                showAlertDialog("Cannot Prove!!");
+            }
+
+
         }
     }
 
@@ -231,8 +313,14 @@ public class ValidationActivity extends AppCompatActivity {
         }
         else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_ZKP)
         {
-            // TODO: validate the block.
-            validationResult = TrustChainBlock.VALIDATION_SUCCESS;
+            ZkpHashChain zkpObj = new ZkpHashChain();
+
+
+            byte[]zkpProofHash = utilComm.getZkpProofHash().toByteArray();
+            byte []hashInBlock = Base64.decode(block.getTransaction().toByteArray(),Base64.DEFAULT);
+            Log.e(TAG,"ZkpProof Hash in utilComm" + Arrays.toString(zkpProofHash));
+            if(zkpObj.verifyZkpProof(zkpProofHash,hashInBlock,EditTextZkpMinNumber))
+                validationResult = TrustChainBlock.VALIDATION_SUCCESS;
         }
 
         MessageProto.UtilComm ValResult = communication.createUtilCommBlock(NullByte,NullByte,NullByte,validationResult);
@@ -240,6 +328,23 @@ public class ValidationActivity extends AppCompatActivity {
 
     }
 
+    public void showAlertDialog(String message)
+    {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+        builder1.setMessage(message);
+        builder1.setCancelable(true);
+
+        builder1.setNeutralButton(
+                "Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+    }
 
     public void onClickValidate(View view)
     {

@@ -32,7 +32,44 @@
             android:layout_height="wrap_content"
             android:onClick="onClickGenValidator"
             android:text="Generate Validator" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Select Attr"
+            android:textSize="15dp"/>
+        <Spinner
+            android:id="@+id/validation_typeSpinner_zkp"
+            android:layout_width="98dp"
+            android:layout_height="42dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/val_editText_zkp"
+            android:text="Enter number"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClickGenValidatorZkp"
+            android:text="Generate Validator" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

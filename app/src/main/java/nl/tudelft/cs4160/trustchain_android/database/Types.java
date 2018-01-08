@@ -12,9 +12,9 @@ public class Types {
         types.add(new Type(1, "Name", false));
         types.add(new Type(2, "Surname", false));
         types.add(new Type(3, "Date Of Birth", false));
-        types.add(new Type(4, "Year Of Birth", true));
+        types.add(new Type(4, "Age", true));
         types.add(new Type(5, "Sex", false));
-        types.add(new Type(6, "Sex", true));
+        types.add(new Type(6, "TestID", true));
         types.add(new Type(7, "Bank Details", false));
         types.add(new Type(8, "Social Number", false));
 

@@ -1,11 +1,15 @@
 package nl.tudelft.cs4160.trustchain_android.connection;
 
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.protobuf.ByteString;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -372,6 +376,10 @@ public abstract class Communication {
 
             if (block.getLinkSequenceNumber() == TrustChainBlock.UNKNOWN_SEQ) {
                 // In case we received a half block
+                if(prevUtilCommBlock == null)
+                {
+                    listener.updateLog("\nERROR No previous utilComm block present " + messageLog);
+                }
                 if (prevUtilCommBlock.getBlockType() == TrustChainBlock.AUTHENTICATION) {
                     this.CurrBlockType = TrustChainBlock.AUTHENTICATION;
                     messageLog += "half block received from: " + peer.getIpAddress() + ":" + peer.getPort() + "\n" + TrustChainBlock.toShortString(block);
@@ -388,9 +396,9 @@ public abstract class Communication {
                     //on receiving utilcomm block get the attribute details, generate a random number and send another utilcomm block to the user.
 
                     if (prevUtilCommBlock != null) {
-                        String[] attribute_value = prevUtilCommBlock.getTransactionValue().toStringUtf8().split("\\s+");
+                        String attribute_value = prevUtilCommBlock.getTransactionValue().toStringUtf8();
                         ZkpHashChain zeroKnowledgeObject = new ZkpHashChain();
-                        zeroKnowledgeObject.zkpAuthenticate(Integer.parseInt(attribute_value[1]));
+                        zeroKnowledgeObject.zkpAuthenticate(Integer.parseInt(attribute_value));
                         MessageProto.UtilComm utilCommToUser = createUtilCommBlock("Authentication Successful!!".getBytes(), zeroKnowledgeObject.getRandomProof().getBytes(), NullByte, TrustChainBlock.RANDOM_PROOF_UTILCOMM);
                         Log.e(TAG, "Sending UtilComm block back to the user along with the zkp random number");
                         listener.updateLog("\n  Sending UtilComm block.......... ");
@@ -429,9 +437,20 @@ public abstract class Communication {
                         //checking of the sign2
                         Log.e(TAG, "Full Block Transaction value " + Arrays.toString(block.getTransaction().toByteArray()));
                         listener.updateLog("\n Full block verified and saved");
-                        blockInVerification = null;
+
+                        // Check if you are receiving this full block for a zkp authentication
+                        if(prevUtilCommBlock != null)
+                        {
+                            // If yes, store the random number and the actual value authenticated
+                            if(prevUtilCommBlock.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM)
+                            {
+                                valueInVerification = prevUtilCommBlock.getZkpRandomNumber().toStringUtf8()+ ":" + valueInVerification;
+                            }
+                        }
                         dbHelper.insertInDB(block, typeOfValueInVerification, valueInVerification);
                         printStoredType();
+                        blockInVerification = null;
+                        prevUtilCommBlock = null;
                         return;
                     }
                 } else {
@@ -456,7 +475,7 @@ public abstract class Communication {
             // If we received utilcomm block
             prevUtilCommBlock = utilComm;
             messageLog += "UtilComm block received from: " + peer.getIpAddress() + ":"
-                    + peer.getPort();
+                    + peer.getPort() + ":" + utilComm.getZkpRandomNumber() + " : " + utilComm.getBlockType();
             listener.updateLog("\n Server: " + messageLog);
             if(utilComm.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM)
             {
@@ -475,11 +494,13 @@ public abstract class Communication {
             else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_SUCCESS)
             {
                 Log.e(TAG, "Validation successful");
+                listener.updateLog("\n  Validation Successful");
                 prevUtilCommBlock = null;
             }
             else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_FAILURE)
             {
                 Log.e(TAG,"Validation Failure");
+                listener.updateLog("\n  Validation Failure");
                 prevUtilCommBlock = null;
             }
         }
@@ -640,7 +661,7 @@ public abstract class Communication {
                         blockType
                 );
 
-        Log.e(TAG, "Created a UtilComm Block with transaction value: " + Arrays.toString(block.getTransactionValue().toByteArray()));
+        Log.e(TAG, "Created a UtilComm Block with block type: " + block.getBlockType());
 
         return block;
 
@@ -673,6 +694,7 @@ public abstract class Communication {
             }
             byte[] zkp_byte = NullByte;
             byte[] proof_byte = NullByte;
+
             MessageProto.UtilComm utilComm = createUtilCommBlock(byte_msg, zkp_byte, proof_byte, typeOfBlock);
             Log.e(TAG, "Sending UtilComm block ");
             listener.updateLog("\n  Sending UtilComm block ");
