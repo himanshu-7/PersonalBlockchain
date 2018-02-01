@@ -27,15 +27,15 @@ public class BlockDescriptionAdapter extends ArrayAdapter<BlockInfo> {
 
     Types types = new Types();
 
-    public BlockDescriptionAdapter(Activity context, ArrayList<BlockInfo> Block){
-        super(context,0, Block);
+    public BlockDescriptionAdapter(Activity context, ArrayList<BlockInfo> Block) {
+        super(context, 0, Block);
     }
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View listItemView = convertView;
-        if(listItemView == null) {
+        if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(
                     R.layout.list_item, parent, false);
         }
@@ -44,33 +44,32 @@ public class BlockDescriptionAdapter extends ArrayAdapter<BlockInfo> {
         //ArrayList<BlockDescription> blockInfo = dbHelper.getBlockDescriptionStored();
         Types types = new Types();
 
-        // Get the {@link AndroidFlavor} object located at this position in the list
-        Log.e(TAG,"CheckPoint 1");
-         BlockInfo currentBlock = getItem(position);
+        // Get the {@link BlockInfo} object located at this position in the list.
+        BlockInfo currentBlock = getItem(position);
 
-            // Find the TextView in the list_item.xml layout with the ID version_name
-            TextView typeTextView = (TextView) listItemView.findViewById(R.id.type);
-            // Get the version name from the current AndroidFlavor object and
-            // set this text on the name TextView
-        Log.e(TAG,"typeID: "+ currentBlock.getType());
-            typeTextView.setText(currentBlock.getType());
+        // Find the TextView in the list_item.xml layout with the ID type.
+        TextView typeTextView = (TextView) listItemView.findViewById(R.id.type);
+        // Get the type from the current BlockInfo object and
+        // set this text on the name TextView
+        Log.e(TAG, "typeID: " + currentBlock.getType());
+        typeTextView.setText(currentBlock.getType());
 
 
-        // Find the TextView in the list_item.xml layout with the ID version_number
-        Log.e(TAG,"Value: "+ currentBlock.getValue());
-            TextView valueTextView = (TextView) listItemView.findViewById(R.id.value);
-            // Get the version number from the current AndroidFlavor object and
-            // set this text on the number TextView
-            valueTextView.setText(currentBlock.getValue());
+        // Find the TextView in the list_item.xml layout with the ID value.
+        Log.e(TAG, "Value: " + currentBlock.getValue());
+        TextView valueTextView = (TextView) listItemView.findViewById(R.id.value);
+        // Get the value of the information from the current BlockInfo object and
+        // set this text on the number TextView
+        valueTextView.setText(currentBlock.getValue());
 
-            // Find the TextView in the list_item.xml layout with the ID version_number
-            TextView sequenceTextView = (TextView) listItemView.findViewById(R.id.sequence);
-            // Get the version number from the current AndroidFlavor object and
-            // set this text on the number TextView
-        Log.e(TAG,"Value: "+ currentBlock.getSequence());
-            sequenceTextView.setText(currentBlock.getSequence());
+        // Find the TextView in the list_item.xml layout with the ID sequence.
+        TextView sequenceTextView = (TextView) listItemView.findViewById(R.id.sequence);
+        // Get the sequence number from the current BlockInfo object and
+        // set this text on the number TextView
+        Log.e(TAG, "Value: " + currentBlock.getSequence());
+        sequenceTextView.setText(currentBlock.getSequence());
 
-        // Return the whole list item layout (containing 2 TextViews and an ImageView)
+        // Return the whole list item layout (containing 3 TextViews)
         // so that it can be shown in the ListView
         return listItemView;
     }
