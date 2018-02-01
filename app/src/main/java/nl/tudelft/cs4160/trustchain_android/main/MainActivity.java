@@ -417,6 +417,11 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         Intent intent = new Intent(this, ValidationActivity.class);
         thisActivity.startActivity(intent);
     }
+    //Start a new activity when My Authentications button is pressed.
+    public void onClickMyAuthentications(View view) {
+        Intent intent = new Intent(this, MyAuthenticationsActivity.class);
+        thisActivity.startActivity(intent);
+    }
 }
 
 

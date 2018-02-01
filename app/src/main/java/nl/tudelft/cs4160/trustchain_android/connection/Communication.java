@@ -1,15 +1,10 @@
 package nl.tudelft.cs4160.trustchain_android.connection;
 
-import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.protobuf.ByteString;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +25,6 @@ import nl.tudelft.cs4160.trustchain_android.main.ValidationActivity;
 import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
 import static nl.tudelft.cs4160.trustchain_android.Peer.bytesToHex;
-import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.ERROR_AUTH_HASH_MISMATCH;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.GENESIS_SEQ;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.builderFullBlock;
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.builderFullBlockLocal;
@@ -54,7 +48,12 @@ public abstract class Communication {
 
     private static final String TAG = Communication.class.getName();
     private Map<String, byte[]> peers;
-    private TrustChainDBHelper dbHelper;
+
+    public static TrustChainDBHelper getDbHelper() {
+        return dbHelper;
+    }
+
+    private static TrustChainDBHelper dbHelper;
     private KeyPair keyPair;
     private CommunicationListener listener;
 

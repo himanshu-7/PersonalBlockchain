@@ -34,9 +34,19 @@
             android:label="@string/title_activity_bluetooth"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".chainExplorer.ChainExplorerActivity" />
-        <activity android:name=".main.QRCodePrint" />
-        <activity android:name=".main.AuthenticationActivity" />
-        <activity android:name=".main.ValidationActivity"></activity>
+        <activity
+            android:name=".main.QRCodePrint"
+            android:label="Scan QR Code"/>
+        <activity
+            android:name=".main.AuthenticationActivity"
+            android:label="Authentication"/>
+        <activity
+            android:name=".main.ValidationActivity"
+            android:label="Verification"/>
+        <activity
+            android:name=".main.MyAuthenticationsActivity"
+            android:label="My Authentications">
+        </activity>
     </application>
 
 </manifest>
