@@ -63,7 +63,7 @@ public abstract class Communication {
 
     private static MessageProto.UtilComm prevUtilCommBlock;
 
-    // Fixme: if any parameter with 'null' is passed all members of block is created as null.
+    // Fixme: if any parameter with 'null' is passed all members of block is created as null .
     // Hence this workaround to pass a "null" byte array.
     private final static byte[] NullByte = "null".getBytes();
 
