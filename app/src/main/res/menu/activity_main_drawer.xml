@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view"
+    tools:context="nl.tudelft.cs4160.trustchain_android.main.MainActivity">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/chain_explorer"
+            android:icon="@drawable/ic_chain_explorer"
+            android:title="Chain Explorer" />
+        <item
+            android:id="@+id/authentication"
+            android:icon="@drawable/ic_authenticate"
+            android:title="Authentication" />
+        <item
+            android:id="@+id/verification"
+            android:icon="@drawable/ic_verification"
+            android:title="Verification" />
+        <item
+            android:id="@+id/nav_manage"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Tools" />
+    </group>
+
+    <item android:title="My Authentications">
+        <menu>
+            <item
+                android:id="@+id/view_all"
+                android:icon="@drawable/ic_view_all"
+                android:title="View All"/>
+            <item
+                android:id="@+id/nav_send"
+                android:icon="@drawable/ic_menu_send"
+                android:title="Send" />
+        </menu>
+    </item>
+
+</menu>

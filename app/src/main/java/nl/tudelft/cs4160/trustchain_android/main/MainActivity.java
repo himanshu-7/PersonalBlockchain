@@ -4,15 +4,23 @@ import android.app.ActivityManager;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -36,7 +44,7 @@ import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
 import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.GENESIS_SEQ;
 
-public class MainActivity extends AppCompatActivity implements CommunicationListener {
+public class MainActivity extends AppCompatActivity implements CommunicationListener, NavigationView.OnNavigationItemSelectedListener {
 
 
     public final static String TRANSACTION = "Hello world!";
@@ -92,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
             communication.simAddPublicKey(getLocalIPAddress(), communication.getMyPublicKey());
             //send either a crawl request or a half block
             //communication.connectToPeer(peer);
-            communication.createNewBlock(peer, -1, toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
+            communication.createNewBlock(peer, -1, toValidateText.getText().toString(), TrustChainBlock.AUTHENTICATION);
         }
     };
 
@@ -190,9 +198,51 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
         initVariables();
         init();
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void initVariables() {
@@ -220,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
 
         if (isStartedFirstTime()) {
             MessageProto.TrustChainBlock block = TrustChainBlock.createGenesisBlock(kp);
-            dbHelper.insertInDB(block,-1,null);
+            dbHelper.insertInDB(block, -1, null);
         }
 
         communication = new NetworkCommunication(dbHelper, kp, this);
@@ -356,52 +406,42 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        IntentResult res = IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
-        if(res != null)
-        {
-            if(res.getContents() == null)
-            {
-                Toast.makeText(this,"Cancelled the scan",Toast.LENGTH_LONG).show();
-            }
-            else
-            {
+        IntentResult res = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (res != null) {
+            if (res.getContents() == null) {
+                Toast.makeText(this, "Cancelled the scan", Toast.LENGTH_LONG).show();
+            } else {
                 // Got text, extract data and connect to the peer now
                 String qrContents;
                 qrContents = res.getContents();
                 connectToPeer(qrContents);
             }
-        }
-        else
-        {
+        } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
 
     }
 
     // Parse the raw QR string and ...
-    void connectToPeer(String rawQrRead)
-    {
+    void connectToPeer(String rawQrRead) {
         // The parameters will be public_key, ip_address, port seperated by ",".
         String[] qrArray = rawQrRead.split(",");
 
         // If no IP address present, don't attempt connection (assuming other fields will be present)
-        if(qrArray[1].equals("null"))
-        {
-            Toast.makeText(this,"No IP adress present to connect",Toast.LENGTH_LONG).show();
+        if (qrArray[1].equals("null")) {
+            Toast.makeText(this, "No IP adress present to connect", Toast.LENGTH_LONG).show();
             return;
         }
 
-        Log.e(TAG,"Peer public key to connect" + qrArray[0]);
-        Log.e(TAG,"New test after encode" + Key.loadPublicKey(qrArray[0]).getEncoded());
+        Log.e(TAG, "Peer public key to connect" + qrArray[0]);
+        Log.e(TAG, "New test after encode" + Key.loadPublicKey(qrArray[0]).getEncoded());
 
-        Peer peer = new Peer(Base64.decode(qrArray[0],Base64.DEFAULT),qrArray[1],Integer.parseInt(qrArray[2]));
+        Peer peer = new Peer(Base64.decode(qrArray[0], Base64.DEFAULT), qrArray[1], Integer.parseInt(qrArray[2]));
 
         communication.addNewPublicKey(peer);
-        Log.e(TAG,"After creating the peer" + Peer.bytesToHex(peer.getPublicKey()));
+        Log.e(TAG, "After creating the peer" + Peer.bytesToHex(peer.getPublicKey()));
 
-        communication.createNewBlock(peer, -1,toValidateText.getText().toString(),TrustChainBlock.AUTHENTICATION);
-
-
+        communication.createNewBlock(peer, -1, toValidateText.getText().toString(), TrustChainBlock.AUTHENTICATION);
 
 
     }
@@ -417,11 +457,42 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
         Intent intent = new Intent(this, ValidationActivity.class);
         thisActivity.startActivity(intent);
     }
+
     //Start a new activity when My Authentications button is pressed.
     public void onClickMyAuthentications(View view) {
         Intent intent = new Intent(this, MyAuthenticationsActivity.class);
         thisActivity.startActivity(intent);
     }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected (MenuItem item){
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.chain_explorer) {
+            Intent intent = new Intent(thisActivity, ChainExplorerActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.authentication) {
+            Intent myIntent = new Intent(thisActivity, AuthenticationActivity.class);
+            thisActivity.startActivity(myIntent);
+        } else if (id == R.id.verification) {
+            Intent intent = new Intent(this, ValidationActivity.class);
+            thisActivity.startActivity(intent);
+        } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.view_all) {
+            Intent intent = new Intent(this, MyAuthenticationsActivity.class);
+            thisActivity.startActivity(intent);
+        } else if (id == R.id.nav_send) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
 }
 
 

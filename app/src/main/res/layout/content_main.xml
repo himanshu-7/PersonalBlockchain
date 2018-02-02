@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="4dp"
+    tools:context="nl.tudelft.cs4160.trustchain_android.main.MainActivity">
+
+    <LinearLayout
+        android:layout_width="377dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="3dp"
+        tools:layout_editor_absoluteY="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="50dp">
+
+            <TextView
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="@string/my_external_ip" />
+
+            <TextView
+                android:id="@+id/my_external_ip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="@string/my_local_ip" />
+
+            <TextView
+                android:id="@+id/my_local_ip"
+                android:layout_width="1dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Remote IP Address and Port Number:"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/destination_IP"
+                android:layout_width="102dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/connect_ip_hint"
+                android:text="192.168.43.194" />
+
+            <EditText
+                android:id="@+id/destination_port"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/default_port" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Information To Save In The Blockchain:"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="User:" />
+
+            <EditText
+                android:id="@+id/toValidateText"
+                android:layout_width="366dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="Text to validate" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Auth.:" />
+
+            <EditText
+                android:id="@+id/validatorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="Original Text" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/connection_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create Block"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/chain_explorer_button"
+                android:layout_width="156dp"
+                android:layout_height="wrap_content"
+                android:text="Chain EXplorer" />
+
+            <Button
+                android:id="@+id/reset_database_button"
+                android:layout_width="155dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="RESET Program" />
+        </LinearLayout>
+
+        <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:orientation="horizontal">-->
+
+        <Button
+            android:id="@+id/bluetooth_connection_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Load QR Code"
+            android:visibility="gone" />
+
+        <!--<Button-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_weight="1"-->
+        <!--android:onClick="onClickScanButton"-->
+        <!--android:text="SCAN QR CODE"-->
+        <!--android:visibility="gone" />-->
+
+        <!--<Button-->
+        <!--android:id="@+id/zkp_lauchButton"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:onClick="onClickZKPAuthenticate"-->
+        <!--android:text="AUTHENTICATE" />-->
+
+        <!--<Button-->
+        <!--android:id="@+id/button2"-->
+        <!--android:layout_width="104dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_weight="1"-->
+        <!--android:text="Validation"-->
+        <!--android:onClick="onClickValidateButton"/>-->
+        <!--</LinearLayout>-->
+
+        <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content">-->
+        <!--<Button-->
+        <!--android:id="@+id/authentication_button"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_weight="1"-->
+        <!--android:text="My Authentications"-->
+        <!--android:onClick="onClickMyAuthentications"/>-->
+        <!---->
+        <!--</LinearLayout>-->
+
+        <android.widget.ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            tools:context="nl.tudelft.cs4160.trustchain_android.chainExplorer.ChainExplorerActivity">
+
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Lets start making your identity Blockchain!!" />
+
+
+        </android.widget.ScrollView>
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>
