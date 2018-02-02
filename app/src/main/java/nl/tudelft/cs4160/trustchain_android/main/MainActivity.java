@@ -1,6 +1,7 @@
 package nl.tudelft.cs4160.trustchain_android.main;
 
 import android.app.ActivityManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
@@ -386,6 +388,17 @@ public class MainActivity extends AppCompatActivity implements CommunicationList
             }
         });
     }
+
+    public void createToast( final String msg) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this,
+                        msg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
 
     public static String getValidatorText() {
 

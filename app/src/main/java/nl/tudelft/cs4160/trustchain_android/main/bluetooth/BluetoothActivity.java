@@ -146,4 +146,9 @@ public class BluetoothActivity extends AppCompatActivity implements Communicatio
     public void updateLog(String msg) {
         addToLog(msg);
     }
+
+    @Override
+    public void createToast(String msg) {
+    }
+
 }

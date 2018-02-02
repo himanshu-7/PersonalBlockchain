@@ -26,12 +26,16 @@ import nl.tudelft.cs4160.trustchain_android.Peer;
 import nl.tudelft.cs4160.trustchain_android.R;
 import nl.tudelft.cs4160.trustchain_android.ZeroKnowledge.ZkpHashChain;
 import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
+import nl.tudelft.cs4160.trustchain_android.block.ValidationResult;
 import nl.tudelft.cs4160.trustchain_android.connection.network.NetworkCommunication;
 import nl.tudelft.cs4160.trustchain_android.database.BlockDescription;
 import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBHelper;
 import nl.tudelft.cs4160.trustchain_android.database.Types;
 import nl.tudelft.cs4160.trustchain_android.message.MessageProto;
 
+import static nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock.validateFullBlock;
+import static nl.tudelft.cs4160.trustchain_android.block.ValidationResult.PARTIAL_NEXT;
+import static nl.tudelft.cs4160.trustchain_android.block.ValidationResult.VALID;
 import static nl.tudelft.cs4160.trustchain_android.main.MainActivity.communication;
 import static nl.tudelft.cs4160.trustchain_android.main.MainActivity.getDbHelper;
 
@@ -41,7 +45,7 @@ public class ValidationActivity extends AppCompatActivity {
     private Spinner val_typSpinnerZkp;
     private Types types;
     private final static String TAG = ValidationActivity.class.toString();
-    private TrustChainDBHelper dbHelper;
+    static private TrustChainDBHelper dbHelper;
     private static BlockDescription blockDescription;
     private static Peer peer;
     private final static byte[] NullByte = "null".getBytes();
@@ -284,7 +288,7 @@ public class ValidationActivity extends AppCompatActivity {
         }
     }
 
-    public static void ValidateBlock(MessageProto.UtilComm utilComm, MessageProto.TrustChainBlock block, Peer to_peer)
+    public static int ValidateBlock(MessageProto.UtilComm utilComm, MessageProto.TrustChainBlock block, Peer to_peer)
     {
         int validationResult = TrustChainBlock.VALIDATION_FAILURE;
 
@@ -297,7 +301,7 @@ public class ValidationActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            byte[] hashInBlock = Base64.decode(block.getTransaction().toByteArray(),Base64.DEFAULT);
+            byte[] hashInBlock = block.getTransaction().toByteArray();
 
             if(Arrays.equals(hashInBlock, TrustChainBlock.hash(toValidate)))
             {
@@ -317,16 +321,42 @@ public class ValidationActivity extends AppCompatActivity {
 
 
             byte[]zkpProofHash = utilComm.getZkpProofHash().toByteArray();
-            byte []hashInBlock = Base64.decode(block.getTransaction().toByteArray(),Base64.DEFAULT);
+            byte []hashInBlock = block.getTransaction().toByteArray();
             Log.e(TAG,"ZkpProof Hash in utilComm" + Arrays.toString(zkpProofHash));
             if(zkpObj.verifyZkpProof(zkpProofHash,hashInBlock,EditTextZkpMinNumber))
                 validationResult = TrustChainBlock.VALIDATION_SUCCESS;
         }
 
+         //Second phase to the validation procedure, here im checking if the block is trustable
+        if(validationResult == TrustChainBlock.VALIDATION_SUCCESS) {
+            validationResult = TrustChainBlock.VALIDATION_FAILURE;
+
+            Log.e(TAG, " \n Transaction verification succesfull start checking the block hash integrity");
+
+            ValidationResult validation = null;
+            try {
+                validation = validateFullBlock(block, dbHelper);
+                if (validation != null && (validation.getStatus() == PARTIAL_NEXT || validation.getStatus() == VALID)) {
+                    validationResult = TrustChainBlock.VALIDATION_SUCCESS;
+                } else {
+                    Log.e(TAG, " \n Validation failed during block verification.");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, " \n Validation failed during block verification.");
+            }
+        }
+
+
+
+
+
+
         MessageProto.UtilComm ValResult = communication.createUtilCommBlock(NullByte,NullByte,NullByte,validationResult);
         communication.sendBlock(to_peer, ValResult);
 
+        return validationResult;
     }
+
 
     public void showAlertDialog(String message)
     {

@@ -26,7 +26,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Enter Attribute Name" />
+            android:text="value" />
 
         <Spinner
             android:id="@+id/normal_typeSpinner"
@@ -55,7 +55,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="Enter Value" />
+            android:text="value" />
     </LinearLayout>
 
     <Button
@@ -75,15 +75,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Attr.:" />
-
-        <EditText
-            android:id="@+id/zkp_attribute"
-            android:layout_width="152dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="Enter Attribute Name" />
 
         <Spinner
             android:id="@+id/zkp_typeSpinner"

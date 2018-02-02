@@ -1,5 +1,6 @@
 package nl.tudelft.cs4160.trustchain_android.connection;
 
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.protobuf.ByteString;
@@ -18,6 +19,7 @@ import nl.tudelft.cs4160.trustchain_android.block.TrustChainBlock;
 import nl.tudelft.cs4160.trustchain_android.block.ValidationResult;
 import nl.tudelft.cs4160.trustchain_android.connection.network.NetworkCommunication;
 import nl.tudelft.cs4160.trustchain_android.database.BlockDescription;
+import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBContract;
 import nl.tudelft.cs4160.trustchain_android.database.TrustChainDBHelper;
 import nl.tudelft.cs4160.trustchain_android.database.Types;
 import nl.tudelft.cs4160.trustchain_android.main.AuthenticationActivity;
@@ -375,8 +377,7 @@ public abstract class Communication {
 
             if (block.getLinkSequenceNumber() == TrustChainBlock.UNKNOWN_SEQ) {
                 // In case we received a half block
-                if(prevUtilCommBlock == null)
-                {
+                if (prevUtilCommBlock == null) {
                     listener.updateLog("\nERROR No previous utilComm block present " + messageLog);
                 }
                 if (prevUtilCommBlock.getBlockType() == TrustChainBlock.AUTHENTICATION) {
@@ -421,9 +422,19 @@ public abstract class Communication {
                 Log.e(TAG, "I got a full block from: " + peer.getIpAddress());
 
                 // TODO: Not a good design, restructure the code!!
-                if(prevUtilCommBlock != null) {
+                if (prevUtilCommBlock != null) {
+                    Log.e(TAG, " \n Verification of value: " + prevUtilCommBlock.getTransactionValue().toStringUtf8() + " received by: " + peer.getIpAddress());
                     if (prevUtilCommBlock.getBlockType() == TrustChainBlock.VALIDATION_NORMAL || prevUtilCommBlock.getBlockType() == TrustChainBlock.VALIDATION_ZKP) {
-                        ValidationActivity.ValidateBlock(prevUtilCommBlock, block, peer);
+                        int value = ValidationActivity.ValidateBlock(prevUtilCommBlock, block, peer);
+                        if (value == TrustChainBlock.VALIDATION_SUCCESS) {
+                            if(prevUtilCommBlock.getTransactionValue().toStringUtf8().compareTo("null")==0){
+                                listener.createToast("Successful validation");
+                            }else{
+                                listener.createToast("Successful validation of "+prevUtilCommBlock.getTransactionValue().toStringUtf8());
+                            }
+                        } else {
+                            listener.createToast("Validation failed");
+                        }
                         prevUtilCommBlock = null;
                         return;
                     }
@@ -431,19 +442,16 @@ public abstract class Communication {
 
                 if (blockInVerification != null) {
                     //Check if we have this block out for verification (the comparison should be on the signature1 )
-                    if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey()))
-                    {
+                    if (block.getLinkPublicKey().equals(blockInVerification.getLinkPublicKey())) {
                         //checking of the sign2
                         Log.e(TAG, "Full Block Transaction value " + Arrays.toString(block.getTransaction().toByteArray()));
                         listener.updateLog("\n Full block verified and saved");
 
                         // Check if you are receiving this full block for a zkp authentication
-                        if(prevUtilCommBlock != null)
-                        {
+                        if (prevUtilCommBlock != null) {
                             // If yes, store the random number and the actual value authenticated
-                            if(prevUtilCommBlock.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM)
-                            {
-                                valueInVerification = prevUtilCommBlock.getZkpRandomNumber().toStringUtf8()+ ":" + valueInVerification;
+                            if (prevUtilCommBlock.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM) {
+                                valueInVerification = prevUtilCommBlock.getZkpRandomNumber().toStringUtf8() + ":" + valueInVerification;
                             }
                         }
                         dbHelper.insertInDB(block, typeOfValueInVerification, valueInVerification);
@@ -476,29 +484,20 @@ public abstract class Communication {
             messageLog += "UtilComm block received from: " + peer.getIpAddress() + ":"
                     + peer.getPort() + ":" + utilComm.getZkpRandomNumber() + " : " + utilComm.getBlockType();
             listener.updateLog("\n Server: " + messageLog);
-            if(utilComm.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM)
-            {
-                Log.e(TAG, " It'a a UtilComm block RANDOM_PROOF_UTILCOMM with transaction_value : " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
-            }
-            else if(utilComm.getBlockType() == TrustChainBlock.ERROR_AUTH_HASH_MISMATCH)
-            {
-                Log.e(TAG, " It'a a UtilComm Error block ERROR_AUTH_HASH_MISMATCH: " +  (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" +  (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" +  (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
+            if (utilComm.getBlockType() == TrustChainBlock.RANDOM_PROOF_UTILCOMM) {
+                Log.e(TAG, " It'a a UtilComm block RANDOM_PROOF_UTILCOMM with transaction_value : " + (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" + (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" + (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
+            } else if (utilComm.getBlockType() == TrustChainBlock.ERROR_AUTH_HASH_MISMATCH) {
+                Log.e(TAG, " It'a a UtilComm Error block ERROR_AUTH_HASH_MISMATCH: " + (utilComm.getTransactionValue().toStringUtf8()) + "\n zkpRandomNumber :" + (utilComm.getZkpRandomNumber().toStringUtf8()) + "\n zkpProofHash :" + (utilComm.getZkpProofHash().toStringUtf8()) + "\n and the type of block is :" + utilComm.getBlockType());
                 blockInVerification = null; // This will allow again to send a new half block
-            }
-            else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_NORMAL  || utilComm.getBlockType() == TrustChainBlock.VALIDATION_ZKP)
-            {
+            } else if (utilComm.getBlockType() == TrustChainBlock.VALIDATION_NORMAL || utilComm.getBlockType() == TrustChainBlock.VALIDATION_ZKP) {
                 Log.e(TAG, "It's a UtilComm Block for Validation");
                 // Nothing to be done, as this block would be useful when we recieve a full block for validation.
-            }
-            else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_SUCCESS)
-            {
+            } else if (utilComm.getBlockType() == TrustChainBlock.VALIDATION_SUCCESS) {
                 Log.e(TAG, "Validation successful");
                 listener.updateLog("\n  Validation Successful");
                 prevUtilCommBlock = null;
-            }
-            else if(utilComm.getBlockType() == TrustChainBlock.VALIDATION_FAILURE)
-            {
-                Log.e(TAG,"Validation Failure");
+            } else if (utilComm.getBlockType() == TrustChainBlock.VALIDATION_FAILURE) {
+                Log.e(TAG, "Validation Failure");
                 listener.updateLog("\n  Validation Failure");
                 prevUtilCommBlock = null;
             }
@@ -525,15 +524,15 @@ public abstract class Communication {
     /**
      * Send a UtilComm Error Block to the connected Peer
      */
-    void sendErrorBlock(Peer peer, int typeOfError)
-    {
+    void sendErrorBlock(Peer peer, int typeOfError) {
         byte[] zkp_byte = NullByte;
         byte[] proof_byte = NullByte;
         byte[] msg = NullByte;
-        MessageProto.UtilComm utilComm = createUtilCommBlock(msg,zkp_byte,proof_byte,typeOfError);
-        Log.e(TAG,"Sending an Error UtilComm block to peer " + typeOfError);
-        sendBlock(peer,utilComm);
+        MessageProto.UtilComm utilComm = createUtilCommBlock(msg, zkp_byte, proof_byte, typeOfError);
+        Log.e(TAG, "Sending an Error UtilComm block to peer " + typeOfError);
+        sendBlock(peer, utilComm);
     }
+
     /**
      * A half block was send to us and received by us. Someone wants this peer to create the other half
      * and send it back. This method handles that 'request'.
@@ -706,6 +705,11 @@ public abstract class Communication {
 
             // Get the hash of the transaction, as the hash of the transaction must be in the block.
             byte[] transactionHash = TrustChainBlock.hash(transactionMessage);
+            //Normalization process of the Hash code
+            byte[] test = Base64.encode( transactionHash , Base64.DEFAULT);
+            transactionHash =Base64.decode( test , Base64.DEFAULT);
+
+
             MessageProto.TrustChainBlock halfBlock = createHalfBlock(transactionHash, peer);
             if (halfBlock != null) {
                 blockInVerification = halfBlock;

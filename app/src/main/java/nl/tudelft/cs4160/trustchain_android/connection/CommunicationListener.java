@@ -7,4 +7,6 @@ package nl.tudelft.cs4160.trustchain_android.connection;
 public interface CommunicationListener {
 
     void updateLog(String msg);
+    void createToast(String msg);
+
 }

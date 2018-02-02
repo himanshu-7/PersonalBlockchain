@@ -69,7 +69,6 @@ public class AuthenticationActivity extends AppCompatActivity {
     }
 
     public void onClickScanZkpAuth(View view) {
-            EditText attribute_text = findViewById(R.id.zkp_attribute);
             EditText value_text = findViewById(R.id.zkp_value);
             //this.transaction = attribute_text.getText().toString().replaceAll("\\s+", "") + " " + value_text.getText().toString();
             try

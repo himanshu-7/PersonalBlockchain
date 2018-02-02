@@ -278,26 +278,28 @@ public class TrustChainBlock {
             result.setInvalid();
             errors.add("Public key is not valid");
         } else {
+
+
+            Log.e(TAG, "The transaction for the validation is:  "+ block.getTransaction().toStringUtf8());
+
             // If public key is valid, check validity of signature
             byte[] hash = hash(block);
             Log.e(TAG, "Hash value of validation procedure:  "+ bytesToHex(hash));
 
             byte[] signature = block.getSignature().toByteArray();
+            Log.e(TAG, "The signature is equal to :  "+ signature.toString());
+
+
             Log.i(TAG, " "  );
             if (!Key.verify(publicKey, hash, signature)) {
                 result.setInvalid();
                 errors.add("Invalid signature.");
             }else{
                 result.setPartialNext();
-
             }
         }
 
-
-
         return result.setErrors(errors);
-
-
     }
 
 
