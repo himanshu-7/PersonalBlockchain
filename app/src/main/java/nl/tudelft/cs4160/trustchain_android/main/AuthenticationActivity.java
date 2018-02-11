@@ -1,6 +1,8 @@
 package nl.tudelft.cs4160.trustchain_android.main;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -201,9 +203,9 @@ public class AuthenticationActivity extends AppCompatActivity {
         return null;
     }
 
-
     public static String getValidatorText() {
         return validatorText.getText().toString();
     }
+
 
 }

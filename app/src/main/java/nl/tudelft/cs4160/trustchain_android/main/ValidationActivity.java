@@ -243,7 +243,7 @@ public class ValidationActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, "Block found "+ sequence_number, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "Block found "+ sequence_number, Toast.LENGTH_LONG).show();
 
         if(isZkpBlock == false) {
             // We have the block and also peer information, can send the block now

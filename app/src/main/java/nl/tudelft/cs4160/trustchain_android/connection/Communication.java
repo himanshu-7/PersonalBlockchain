@@ -380,6 +380,8 @@ public abstract class Communication {
                 if (prevUtilCommBlock == null) {
                     listener.updateLog("\nERROR No previous utilComm block present " + messageLog);
                 }
+                listener.createToast("A request of authentication has been received.");
+
                 if (prevUtilCommBlock.getBlockType() == TrustChainBlock.AUTHENTICATION) {
                     this.CurrBlockType = TrustChainBlock.AUTHENTICATION;
                     messageLog += "half block received from: " + peer.getIpAddress() + ":" + peer.getPort() + "\n" + TrustChainBlock.toShortString(block);
@@ -458,6 +460,7 @@ public abstract class Communication {
                         printStoredType();
                         blockInVerification = null;
                         prevUtilCommBlock = null;
+                        listener.createToast("The new attribute has been authenticated.");
                         return;
                     }
                 } else {
